@@ -9,6 +9,7 @@ const links = [
   { href: '/programs', label: 'Programs' },
   { href: '/schedule', label: 'Schedule' },
   { href: '/pricing', label: 'Pricing' },
+  { href: '/shop', label: 'Shop' },
 ]
 
 export default function Navbar() {
@@ -29,7 +30,7 @@ export default function Navbar() {
             </Link>
           ))}
           <Link href="/book" className="bg-teal-500 hover:bg-teal-400 text-black font-bold text-sm px-4 py-2 rounded transition-colors">
-            Book Free Trial
+            Free Trial
           </Link>
         </div>
 
@@ -50,7 +51,7 @@ export default function Navbar() {
             </Link>
           ))}
           <Link href="/book" className="bg-teal-500 text-black font-bold px-4 py-2 rounded text-center" onClick={() => setOpen(false)}>
-            Book Free Trial
+            Free Trial
           </Link>
         </div>
       )}

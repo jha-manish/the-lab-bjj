@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import InstagramFeed from '@/components/InstagramFeed'
 
 export const metadata: Metadata = {
   title: 'The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON',
@@ -142,6 +143,9 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Instagram Feed */}
+      <InstagramFeed />
     </>
   )
 }
