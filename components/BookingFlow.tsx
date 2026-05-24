@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 declare global {
@@ -604,12 +605,12 @@ export default function BookingFlow({ initialCategory, allowedCategories, freeTr
         {confirmData?.id && (
           <p className="text-gray-500 text-xs">Reference: {confirmData.id}</p>
         )}
-        <a
+        <Link
           href="/"
           className="bg-teal-500 hover:bg-teal-400 text-black font-black px-8 py-4 rounded text-lg transition-colors mt-2"
         >
           Back to Home
-        </a>
+        </Link>
       </div>
     )
   }
