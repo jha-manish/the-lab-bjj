@@ -205,7 +205,7 @@ export default function AboutPage() {
             </div>
             <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <Image
-                src="/images/about/class-overhead.jpg"
+                src="/images/hero/hero-overhead.jpg"
                 alt="Overhead view of a class in session"
                 fill
                 sizes="(max-width: 640px) 100vw, 576px"
