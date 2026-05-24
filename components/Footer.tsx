@@ -27,8 +27,9 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="border-t border-white/10 text-center py-4 text-xs text-gray-600">
-        © {new Date().getFullYear()} The Jiu-Jitsu Lab. All rights reserved.
+      <div className="border-t border-white/10 text-center py-4 text-xs text-gray-600 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <span>© {new Date().getFullYear()} The Jiu-Jitsu Lab. All rights reserved.</span>
+        <Link href="/privacy" className="hover:text-gray-400 transition-colors">Privacy Policy</Link>
       </div>
     </footer>
   )
