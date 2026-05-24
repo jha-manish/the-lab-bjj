@@ -22,13 +22,22 @@ export default function Footer() {
         <div>
           <p className="text-white font-semibold mb-3">Contact</p>
           <div className="flex flex-col gap-2 text-sm text-gray-400">
-            <p>📍 420 Weber St N, Waterloo, ON</p>
+            <a
+              href="https://maps.app.goo.gl/aJwg6Sc1smkmKRTz7"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              📍 420 Weber St N, Waterloo, ON
+            </a>
             <a href="mailto:support@labjiujitsu.com" className="hover:text-white transition-colors">support@labjiujitsu.com</a>
           </div>
         </div>
       </div>
-      <div className="border-t border-white/10 text-center py-4 text-xs text-gray-600">
-        © {new Date().getFullYear()} The Jiu-Jitsu Lab. All rights reserved.
+      <div className="border-t border-white/10 text-center py-4 text-xs text-gray-600 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <span>© {new Date().getFullYear()} The Jiu-Jitsu Lab. All rights reserved.</span>
+        <Link href="/privacy" className="hover:text-gray-400 transition-colors">Privacy Policy</Link>
+        <Link href="/terms" className="hover:text-gray-400 transition-colors">Terms of Service</Link>
       </div>
     </footer>
   )

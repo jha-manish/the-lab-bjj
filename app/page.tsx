@@ -26,36 +26,59 @@ export default function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="min-h-[90vh] flex items-center bg-zinc-950 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-900/20 to-transparent pointer-events-none" />
-        <div className="max-w-6xl mx-auto px-4 py-24">
-          <div className="flex items-center gap-3 mb-5">
-            <span className="text-teal-400 font-semibold tracking-widest text-sm uppercase">Waterloo, Ontario</span>
-            <span className="text-white/20">·</span>
-            <span className="text-white/50 font-semibold text-sm uppercase tracking-widest">Est. 1998</span>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
-            WELCOME TO<br />
-            <span className="text-teal-400">THE JIU-JITSU LAB</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300 italic mb-4">Train smart. Roll hard.</p>
-          <p className="text-gray-400 max-w-2xl mb-4 leading-relaxed">
-            Build confidence and community through Brazilian Jiu-Jitsu — led by{' '}
-            <span className="text-white font-semibold">Head Coach Brandon Twaddle, IBJJF No-Gi World Silver Medalist</span>,{' '}
-            and a staff of world-level competitors including IBJJF World Champion Dave Knowles.
-          </p>
-          <p className="text-gray-400 max-w-2xl mb-8 leading-relaxed">
-            Located in Waterloo, ON, The Jiu-Jitsu Lab offers expert instruction in Gi, No-Gi, Kids, Women&apos;s, Competition, and Private training.
-            Whether you&apos;re stepping on the mat for the first time or chasing gold at your next tournament, there&apos;s a place for you here.
-          </p>
-          <p className="text-sm text-gray-500 mb-8">📍 420 Weber St N, Waterloo, ON &nbsp;|&nbsp; support@labjiujitsu.com</p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/book" className="bg-teal-500 hover:bg-teal-400 text-black font-black px-8 py-4 rounded text-lg transition-colors">
-              BOOK YOUR FREE TRIAL
-            </Link>
-            <Link href="/programs" className="border border-white/30 hover:border-white text-white font-semibold px-8 py-4 rounded text-lg transition-colors">
-              View Programs
-            </Link>
+      <section className="min-h-[92vh] flex items-center bg-zinc-950 relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center lg:bg-[center_right] opacity-90"
+          style={{ backgroundImage: "url('/images/hero/hero-sparring.jpg')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/95 via-zinc-950/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-black/50" />
+        <div className="absolute inset-y-0 left-0 w-2/3 bg-[radial-gradient(ellipse_at_left,rgba(0,0,0,0.48),transparent_68%)]" />
+
+        <div className="relative max-w-6xl mx-auto px-4 py-20 w-full">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="text-teal-400 font-semibold tracking-widest text-sm uppercase">Waterloo, Ontario</span>
+              <span className="text-white/20">·</span>
+              <span className="text-white/60 font-semibold text-sm uppercase tracking-widest">Est. 1998</span>
+            </div>
+            <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
+              WELCOME TO<br />
+              <span className="text-teal-400">THE JIU-JITSU LAB</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-200 italic mb-5">Train smart. Roll hard.</p>
+            <p className="text-white font-bold max-w-2xl mb-4 leading-relaxed">
+              A dedicated Brazilian Jiu-Jitsu academy with roots stretching back to 1998 — led by{' '}
+              <span>Head Coach Brandon Twaddle, IBJJF No-Gi World Silver Medalist</span>,{' '}
+              and a staff of world-level competitors including IBJJF World Champion Dave Knowles.
+            </p>
+            <p className="text-white font-bold max-w-2xl mb-8 leading-relaxed">
+              Gi, No-Gi, Kids, Women&apos;s, Competition, and Private training in Waterloo. Whether you&apos;re brand new or chasing gold,
+              there&apos;s a place for you on the mat.
+            </p>
+            <p className="text-sm text-white font-bold mb-8">
+              📍{' '}
+              <a
+                href="https://maps.app.goo.gl/aJwg6Sc1smkmKRTz7"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-teal-300 transition-colors"
+              >
+                420 Weber St N, Waterloo, ON
+              </a>
+              {' '}|{' '}
+              <a href="mailto:support@labjiujitsu.com" className="hover:text-teal-300 transition-colors">
+                support@labjiujitsu.com
+              </a>
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/book" className="bg-teal-500 hover:bg-teal-400 text-black font-black px-8 py-4 rounded text-lg transition-colors">
+                BOOK YOUR FREE TRIAL
+              </Link>
+              <Link href="/programs" className="border border-white/30 bg-black/20 hover:bg-white/10 hover:border-white text-white font-semibold px-8 py-4 rounded text-lg transition-colors">
+                View Programs
+              </Link>
+            </div>
           </div>
         </div>
       </section>

@@ -1,20 +1,36 @@
+export const runtime = 'edge'
+
 import { NextResponse } from 'next/server'
-import { square, bigintReplacer } from '@/lib/square'
+import { squareFetch, transformItem } from '@/lib/square'
 
 export async function GET() {
   try {
-    const response = await square.catalog.list({ types: 'ITEM' })
+    const items: ReturnType<typeof transformItem>[] = []
+    let cursor: string | undefined
 
-    const items: unknown[] = []
-    for await (const item of response) {
-      if (item.type === 'ITEM' && item.itemData) {
-        items.push(item)
+    do {
+      const path = cursor
+        ? `/catalog/list?types=ITEM&cursor=${encodeURIComponent(cursor)}`
+        : '/catalog/list?types=ITEM'
+
+      const res = await squareFetch(path)
+      if (!res.ok) throw new Error(`Square catalog ${res.status}: ${await res.text()}`)
+
+      const data = (await res.json()) as {
+        objects?: Record<string, unknown>[]
+        cursor?: string
       }
-    }
 
-    return new NextResponse(JSON.stringify({ items }, bigintReplacer), {
-      headers: { 'Content-Type': 'application/json' },
-    })
+      for (const obj of data.objects ?? []) {
+        if (obj.type === 'ITEM' && obj.item_data) {
+          items.push(transformItem(obj))
+        }
+      }
+
+      cursor = data.cursor
+    } while (cursor)
+
+    return NextResponse.json({ items })
   } catch (err) {
     console.error('Square catalog error:', err)
     return NextResponse.json({ error: 'Failed to fetch catalog' }, { status: 500 })
