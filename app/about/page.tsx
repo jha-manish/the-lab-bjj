@@ -41,18 +41,38 @@ const coaches = [
 export default function AboutPage() {
   return (
     <>
-      <section className="bg-zinc-950 py-20">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="bg-zinc-950 py-20 relative overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-[520px] overflow-hidden">
+          <div
+            className="absolute inset-y-0 right-0 w-full lg:w-[58%] scale-110 bg-cover bg-[center_70%] opacity-50"
+            style={{ backgroundImage: "url('/images/hero/hero-group.jpg')" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/90 to-zinc-950/45" />
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/20 via-transparent to-zinc-950" />
+        </div>
+
+        <div className="relative max-w-6xl mx-auto px-4">
+          <div className="mb-20 max-w-2xl">
           <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">Who We Are</p>
           <h1 className="text-5xl font-black mb-6">The Jiu-Jitsu Lab <span className="text-teal-400">Story</span></h1>
-          <p className="text-gray-400 max-w-2xl leading-relaxed mb-4">
+          <p className="text-gray-400 leading-relaxed mb-4">
             The Jiu-Jitsu Lab was built on a single belief: that dedicated, focused instruction beats generalist training every time.
             We don&apos;t offer kickboxing, yoga, or fitness classes. We do one thing — Brazilian Jiu-Jitsu — and we do it at the highest level.
           </p>
-          <p className="text-gray-400 max-w-2xl leading-relaxed mb-16">
-            Located at 420 Weber St N in Waterloo, ON, we serve beginners, recreational grapplers, students, parents, and competitors.
+          <p className="text-gray-400 leading-relaxed">
+            Located at{' '}
+            <a
+              href="https://maps.app.goo.gl/aJwg6Sc1smkmKRTz7"
+              target="_blank"
+              rel="noreferrer"
+              className="text-white font-semibold hover:text-teal-300 transition-colors"
+            >
+              420 Weber St N in Waterloo, ON
+            </a>
+            , we serve beginners, recreational grapplers, students, parents, and competitors.
             Whatever your goal on the mat, we have the coaching staff to get you there.
           </p>
+          </div>
 
           {/* Roots section */}
           <div className="mb-16 max-w-3xl">
