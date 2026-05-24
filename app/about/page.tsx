@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -150,6 +151,56 @@ export default function AboutPage() {
                 <p className="text-gray-400 leading-relaxed">{c.bio}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Photo Gallery */}
+      <section className="bg-zinc-950 py-20">
+        <div className="max-w-6xl mx-auto px-4">
+          <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">The Gym</p>
+          <h2 className="text-4xl font-black mb-12">Life on the <span className="text-teal-400">Mat</span></h2>
+
+          {/* Feature photo — group shot */}
+          <div className="relative w-full rounded-xl overflow-hidden mb-4" style={{ aspectRatio: '16/7' }}>
+            <Image
+              src="/images/about/group-photo.jpg"
+              alt="The Jiu-Jitsu Lab — class group photo"
+              fill
+              sizes="(max-width: 768px) 100vw, 1152px"
+              className="object-cover object-top"
+            />
+          </div>
+
+          {/* Three-column row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+              <Image
+                src="/images/about/class-circle.jpg"
+                alt="Class circle on the mat"
+                fill
+                sizes="(max-width: 640px) 100vw, 384px"
+                className="object-cover"
+              />
+            </div>
+            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+              <Image
+                src="/images/about/class-overhead.jpg"
+                alt="Overhead view of a class in session"
+                fill
+                sizes="(max-width: 640px) 100vw, 384px"
+                className="object-cover"
+              />
+            </div>
+            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+              <Image
+                src="/images/about/sparring-session.jpg"
+                alt="Live sparring session"
+                fill
+                sizes="(max-width: 640px) 100vw, 384px"
+                className="object-cover object-center"
+              />
+            </div>
           </div>
         </div>
       </section>
