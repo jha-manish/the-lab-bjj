@@ -9,9 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "audit:critical": "npm audit --audit-level=critical",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "preview": "npm run pages:build && wrangler pages dev",
-    "deploy": "npm run pages:build && wrangler pages deploy"
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "next": "16.2.6",
@@ -20,8 +19,7 @@
     "square": "^44.1.0"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16",
-    "vercel": "^47.0.4",
+    "@opennextjs/cloudflare": "^1.19.11",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
