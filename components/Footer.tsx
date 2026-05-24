@@ -30,6 +30,7 @@ export default function Footer() {
       <div className="border-t border-white/10 text-center py-4 text-xs text-gray-600 flex flex-col sm:flex-row items-center justify-center gap-3">
         <span>© {new Date().getFullYear()} The Jiu-Jitsu Lab. All rights reserved.</span>
         <Link href="/privacy" className="hover:text-gray-400 transition-colors">Privacy Policy</Link>
+        <Link href="/terms" className="hover:text-gray-400 transition-colors">Terms of Service</Link>
       </div>
     </footer>
   )
