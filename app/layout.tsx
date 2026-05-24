@@ -12,6 +12,9 @@ const geist = Geist({
 export const metadata: Metadata = {
   title: "The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON",
   description: "Waterloo's dedicated BJJ academy coached by IBJJF World Champion Dave Knowles. Gi, No-Gi, Kids, Women's & Competition programs. First week free.",
+  icons: {
+    icon: '/the-lab-bjj-logo.png',
+  },
 };
 
 export default function RootLayout({
