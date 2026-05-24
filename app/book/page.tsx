@@ -67,8 +67,23 @@ export default function BookPage() {
             <div>
               <h3 className="font-bold text-lg mb-4">Find us</h3>
               <ul className="flex flex-col gap-2 text-gray-400">
-                <li>📍 420 Weber St N, Waterloo, ON</li>
-                <li>✉️ support@labjiujitsu.com</li>
+                <li>
+                  📍{' '}
+                  <a
+                    href="https://maps.app.goo.gl/aJwg6Sc1smkmKRTz7"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    420 Weber St N, Waterloo, ON
+                  </a>
+                </li>
+                <li>
+                  ✉️{' '}
+                  <a href="mailto:support@labjiujitsu.com" className="hover:text-white transition-colors">
+                    support@labjiujitsu.com
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

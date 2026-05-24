@@ -22,7 +22,14 @@ export default function Footer() {
         <div>
           <p className="text-white font-semibold mb-3">Contact</p>
           <div className="flex flex-col gap-2 text-sm text-gray-400">
-            <p>📍 420 Weber St N, Waterloo, ON</p>
+            <a
+              href="https://maps.app.goo.gl/aJwg6Sc1smkmKRTz7"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              📍 420 Weber St N, Waterloo, ON
+            </a>
             <a href="mailto:support@labjiujitsu.com" className="hover:text-white transition-colors">support@labjiujitsu.com</a>
           </div>
         </div>
