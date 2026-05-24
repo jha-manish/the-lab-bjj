@@ -19,7 +19,7 @@ export default function BookPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 mb-10 text-sm">
             <div className="flex items-center gap-2 text-gray-300">
-              <span className="text-teal-400">✓</span> Coached by 2013 IBJJF World Champion Dave Knowles
+              <span className="text-teal-400">✓</span> Coached by IBJJF World Champion Dave Knowles
             </div>
             <div className="flex items-center gap-2 text-gray-300">
               <span className="text-teal-400">✓</span> All levels welcome

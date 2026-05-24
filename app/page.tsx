@@ -4,21 +4,22 @@ import InstagramFeed from '@/components/InstagramFeed'
 
 export const metadata: Metadata = {
   title: 'The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON',
-  description: "Waterloo's dedicated BJJ academy led by IBJJF No-Gi World Silver Medalist Brandon Twaddle and a world-class coaching staff. Gi, No-Gi, Kids, Women's & Competition. First week free.",
+  description: "Waterloo's dedicated BJJ academy. Est. 1998. Led by IBJJF No-Gi World Silver Medalist Brandon Twaddle and a world-class coaching staff. Gi, No-Gi, Kids, Women's & Competition. First week free.",
 }
 
 const programs = [
   { title: 'Gi & No-Gi BJJ', desc: 'For adults of all levels. Traditional and modern grappling taught by world-level competitors. Morning and evening classes available.' },
   { title: 'Kids BJJ', desc: 'Ages 5–15. Confidence, discipline, and self-defence through fun, structured classes led by Black Belt Roger Morais.' },
   { title: "Women's BJJ", desc: 'A dedicated women-only program in a supportive, welcoming environment. No experience needed.' },
-  { title: 'Competition Training', desc: 'Led by Dave Knowles — 2013 IBJJF World Champion. For competitors looking to take their game to the next level.' },
+  { title: 'Competition Training', desc: 'Led by Dave Knowles — IBJJF World Champion. For competitors looking to take their game to the next level.' },
 ]
 
 const coaches = [
-  { name: 'Brandon Twaddle', rank: 'Brown Belt', cred: 'Head Coach · IBJJF No-Gi World Silver Medalist' },
-  { name: 'Dave Knowles', rank: 'Black Belt', cred: '2013 IBJJF World Champion' },
-  { name: 'Roger Morais', rank: 'Black Belt', cred: '15+ years experience, Kids Coach' },
-  { name: 'Stephen DesChamp', rank: 'Brown Belt', cred: 'IBJJF World Competitor, Morning Classes' },
+  { name: 'Dragan Konjevic', rank: 'Black Belt', cred: 'Founder · Alliance BB promoted by Romero "Jacaré" Cavalcanti', founder: true },
+  { name: 'Brandon Twaddle', rank: 'Brown Belt', cred: 'Head Coach · IBJJF No-Gi World Silver Medalist', founder: false },
+  { name: 'Dave Knowles', rank: 'Black Belt', cred: 'IBJJF World Champion', founder: false },
+  { name: 'Roger Morais', rank: 'Black Belt', cred: '15+ years experience · Kids Coach', founder: false },
+  { name: 'Stephen DesChamp', rank: 'Brown Belt', cred: 'IBJJF World Competitor · Morning Classes', founder: false },
 ]
 
 export default function Home() {
@@ -28,7 +29,11 @@ export default function Home() {
       <section className="min-h-[90vh] flex items-center bg-zinc-950 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-teal-900/20 to-transparent pointer-events-none" />
         <div className="max-w-6xl mx-auto px-4 py-24">
-          <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">Waterloo, Ontario</p>
+          <div className="flex items-center gap-3 mb-5">
+            <span className="text-teal-400 font-semibold tracking-widest text-sm uppercase">Waterloo, Ontario</span>
+            <span className="text-white/20">·</span>
+            <span className="text-white/50 font-semibold text-sm uppercase tracking-widest">Est. 1998</span>
+          </div>
           <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
             WELCOME TO<br />
             <span className="text-teal-400">THE JIU-JITSU LAB</span>
@@ -37,7 +42,7 @@ export default function Home() {
           <p className="text-gray-400 max-w-2xl mb-4 leading-relaxed">
             Build confidence and community through Brazilian Jiu-Jitsu — led by{' '}
             <span className="text-white font-semibold">Head Coach Brandon Twaddle, IBJJF No-Gi World Silver Medalist</span>,{' '}
-            and a staff of world-level competitors including 2013 IBJJF World Champion Dave Knowles.
+            and a staff of world-level competitors including IBJJF World Champion Dave Knowles.
           </p>
           <p className="text-gray-400 max-w-2xl mb-8 leading-relaxed">
             Located in Waterloo, ON, The Jiu-Jitsu Lab offers expert instruction in Gi, No-Gi, Kids, Women&apos;s, Competition, and Private training.
@@ -63,10 +68,11 @@ export default function Home() {
             Most gyms offer BJJ as one class among many. The Jiu-Jitsu Lab is built entirely around Brazilian Jiu-Jitsu —
             every coach, every class, every program. That focus means faster progress, deeper instruction, and a tighter community.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mb-16">
             {[
               'IBJJF World Silver Medalist as Head Coach',
               'Four world-level instructors',
+              'Rooted in 25+ years of BJJ history in KW',
               'Dedicated Fundamentals classes for beginners',
               'Kids, Women\'s, and Competition programs',
               'Free trial week — no commitment',
@@ -78,15 +84,23 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Lineage callout */}
-          <div className="border-l-4 border-teal-500 pl-6 max-w-2xl">
-            <p className="text-white font-semibold mb-1">20+ years of BJJ lineage in Waterloo</p>
-            <p className="text-gray-400 leading-relaxed">
-              Our coaches — Dave Knowles, Brandon Twaddle, and Roger Morais — were all trained and developed by Dragan Konjevic,
-              who spent over two decades building the BJJ community in Kitchener-Waterloo through Dragan Alliance.
-              Nearly every black belt in the region traces their roots back to him.{' '}
-              <Link href="/about" className="text-teal-400 hover:text-teal-300 transition-colors">Read our story →</Link>
+          {/* Lineage callout — full width, more visual weight */}
+          <div className="bg-zinc-950 border border-white/10 rounded-2xl p-8 max-w-3xl">
+            <p className="text-teal-400 font-semibold tracking-widest text-xs uppercase mb-3">Lineage</p>
+            <h3 className="text-2xl font-black mb-4">Jacaré → Dragan → The Lab</h3>
+            <p className="text-gray-400 leading-relaxed mb-4">
+              In 1998, <span className="text-white font-semibold">Dragan Konjevic</span> — an Alliance black belt promoted by the legendary{' '}
+              <span className="text-white font-semibold">Romero &quot;Jacaré&quot; Cavalcanti</span> — opened the first BJJ gym in the Kitchener-Waterloo region
+              under the banner of Dragan Alliance. He was the first black belt in the region, and the first to bring jiu-jitsu here.
             </p>
+            <p className="text-gray-400 leading-relaxed mb-6">
+              His students have gone on to win major titles and open multiple gyms across KW.
+              Nearly every black belt in the region today traces their roots back to him — including our own coaches.
+              Dragan still comes in to teach, and his presence is a reminder of where all of this started.
+            </p>
+            <Link href="/about" className="inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 font-semibold transition-colors">
+              Read the full story →
+            </Link>
           </div>
         </div>
       </section>
@@ -116,15 +130,20 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-4xl font-black mb-4">World-Class <span className="text-teal-400">Coaching Staff</span></h2>
           <p className="text-gray-400 mb-12 max-w-xl">No gym in Waterloo has credentials like ours. Every instructor competes or has competed at the highest level.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {coaches.map(c => (
-              <div key={c.name} className="bg-zinc-950 border border-white/10 rounded-xl p-6">
-                <div className="w-12 h-12 rounded-full bg-teal-500/20 flex items-center justify-center mb-4">
+              <div key={c.name} className={`bg-zinc-950 border rounded-xl p-6 ${c.founder ? 'border-teal-500/40' : 'border-white/10'}`}>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${c.founder ? 'bg-teal-500/30' : 'bg-teal-500/20'}`}>
                   <span className="text-teal-400 font-black text-lg">{c.name[0]}</span>
                 </div>
                 <p className="font-bold text-white">{c.name}</p>
                 <p className="text-teal-400 text-sm font-semibold">{c.rank}</p>
                 <p className="text-gray-400 text-sm mt-1">{c.cred}</p>
+                {c.founder && (
+                  <span className="inline-block mt-3 text-xs font-bold text-teal-400 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-full">
+                    Founder
+                  </span>
+                )}
               </div>
             ))}
           </div>
