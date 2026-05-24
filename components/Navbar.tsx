@@ -7,9 +7,8 @@ import { useState } from 'react'
 const links = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
-  { href: '/programs', label: 'Programs' },
+  { href: '/memberships', label: 'Memberships' },
   { href: '/schedule', label: 'Schedule' },
-  { href: '/pricing', label: 'Pricing' },
   { href: '/shop', label: 'Shop' },
 ]
 
@@ -20,7 +19,7 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur border-b border-white/10">
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
         <Link href="/" className="flex items-center">
-          <Image src="/the-lab-bjj-logo.png" alt="The Jiu-Jitsu Lab" width={56} height={56} className="object-contain" />
+          <Image src="/the-lab-bjj-logo_no_bjj.png" alt="The Jiu-Jitsu Lab" width={56} height={56} className="object-contain" />
         </Link>
 
         {/* Desktop nav */}
