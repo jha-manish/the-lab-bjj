@@ -184,7 +184,7 @@ export default function AboutPage() {
           {/* Feature photo — group shot */}
           <div className="relative w-full rounded-xl overflow-hidden mb-4" style={{ aspectRatio: '16/7' }}>
             <Image
-              src="/images/about/group-photo.jpg"
+              src="/images/hero/hero-group.jpg"
               alt="The Jiu-Jitsu Lab — class group photo"
               fill
               sizes="(max-width: 768px) 100vw, 1152px"
@@ -196,7 +196,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <Image
-                src="/images/about/class-circle.jpg"
+                src="/images/hero/hero-circle.jpg"
                 alt="Class circle on the mat"
                 fill
                 sizes="(max-width: 640px) 100vw, 576px"
@@ -205,7 +205,7 @@ export default function AboutPage() {
             </div>
             <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <Image
-                src="/images/about/class-overhead.jpg"
+                src="/images/hero/hero-overhead.jpg"
                 alt="Overhead view of a class in session"
                 fill
                 sizes="(max-width: 640px) 100vw, 576px"
@@ -214,7 +214,7 @@ export default function AboutPage() {
             </div>
             <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <Image
-                src="/images/about/sparring-session.jpg"
+                src="/images/hero/hero-sparring.jpg"
                 alt="Live sparring session"
                 fill
                 sizes="(max-width: 640px) 100vw, 576px"
@@ -223,7 +223,7 @@ export default function AboutPage() {
             </div>
             <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <Image
-                src="/images/about/drilling.jpg"
+                src="/images/hero/hero-drilling.jpg"
                 alt="Drilling on the mat"
                 fill
                 sizes="(max-width: 640px) 100vw, 576px"
