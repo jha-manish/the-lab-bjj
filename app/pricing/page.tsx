@@ -7,10 +7,42 @@ export const metadata: Metadata = {
 }
 
 const plans = [
-  { name: 'Adult Unlimited', price: '$135', period: '/month', desc: 'Unlimited access to all adult classes — Gi, No-Gi, Open Mat, and more.', highlight: true },
-  { name: 'Student Rate', price: '$119', period: '/month', desc: 'Valid UW or Laurier student ID required. Unlimited classes.', highlight: false },
-  { name: 'Kids BJJ', price: '$120', period: '/month', desc: 'Unlimited Kids BJJ classes for ages 5–15.', highlight: false },
-  { name: 'Drop-In', price: '$20', period: '/class', desc: 'Single class drop-in. No membership required.', highlight: false },
+  {
+    name: 'Adult Unlimited',
+    price: '$135',
+    period: '/month',
+    desc: 'Unlimited access to all adult classes — Gi, No-Gi, Open Mat, and more.',
+    highlight: true,
+    cta: 'Get Started',
+    href: '/shop',
+  },
+  {
+    name: 'Student Rate',
+    price: '$119',
+    period: '/month',
+    desc: 'Valid UW or Laurier student ID required. Unlimited classes.',
+    highlight: false,
+    cta: 'Get Started',
+    href: '/shop',
+  },
+  {
+    name: 'Kids BJJ',
+    price: '$120',
+    period: '/month',
+    desc: 'Unlimited Kids BJJ classes for ages 5–15.',
+    highlight: false,
+    cta: 'Get Started',
+    href: '/shop',
+  },
+  {
+    name: 'Drop-In',
+    price: '$20',
+    period: '/class',
+    desc: 'Single class drop-in. No membership required.',
+    highlight: false,
+    cta: 'Book a Class',
+    href: '/book',
+  },
 ]
 
 export default function PricingPage() {
@@ -35,13 +67,23 @@ export default function PricingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {plans.map(p => (
-              <div key={p.name} className={`rounded-xl p-6 border transition-colors ${p.highlight ? 'bg-teal-500 border-teal-400' : 'bg-zinc-900 border-white/10 hover:border-teal-500/40'}`}>
+              <div key={p.name} className={`rounded-xl p-6 border flex flex-col transition-colors ${p.highlight ? 'bg-teal-500 border-teal-400' : 'bg-zinc-900 border-white/10 hover:border-teal-500/40'}`}>
                 <p className={`text-sm font-semibold mb-2 ${p.highlight ? 'text-black/70' : 'text-teal-400'}`}>{p.name}</p>
                 <div className="flex items-baseline gap-1 mb-3">
                   <span className={`text-4xl font-black ${p.highlight ? 'text-black' : 'text-white'}`}>{p.price}</span>
                   <span className={`text-sm ${p.highlight ? 'text-black/60' : 'text-gray-500'}`}>{p.period}</span>
                 </div>
-                <p className={`text-sm leading-relaxed ${p.highlight ? 'text-black/70' : 'text-gray-400'}`}>{p.desc}</p>
+                <p className={`text-sm leading-relaxed mb-6 flex-1 ${p.highlight ? 'text-black/70' : 'text-gray-400'}`}>{p.desc}</p>
+                <Link
+                  href={p.href}
+                  className={`block text-center font-black text-sm px-4 py-3 rounded transition-colors ${
+                    p.highlight
+                      ? 'bg-black/20 hover:bg-black/30 text-black'
+                      : 'bg-teal-500 hover:bg-teal-400 text-black'
+                  }`}
+                >
+                  {p.cta} →
+                </Link>
               </div>
             ))}
           </div>
