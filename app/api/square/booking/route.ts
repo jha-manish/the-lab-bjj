@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { squareFetch, LOCATION_ID, findOrCreateCustomer, transformBooking } from '@/lib/square'
 
