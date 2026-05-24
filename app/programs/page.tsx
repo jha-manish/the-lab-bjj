@@ -34,7 +34,7 @@ const programs = [
   {
     title: 'Competition Training',
     tag: 'Intermediate+',
-    desc: 'Led by Dave Knowles — 2013 IBJJF World Champion. Focused training for competitors looking to sharpen their game and compete at local and national tournaments.',
+    desc: 'Led by Dave Knowles — IBJJF World Champion. Focused training for competitors looking to sharpen their game and compete at local and national tournaments.',
     times: 'Thursday 7:30 PM',
   },
   {
