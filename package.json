@@ -9,10 +9,12 @@
     "lint": "eslint",
     "pages:build": "npx @cloudflare/next-on-pages",
     "preview": "npm run pages:build && wrangler pages dev",
-    "deploy": "npm run pages:build && wrangler pages deploy"
+    "deploy": "npm run pages:build && wrangler pages deploy",
+    "typecheck": "tsc --noEmit",
+    "audit:critical": "npm audit --audit-level=critical"
   },
   "dependencies": {
-    "next": "15.5.2",
+    "next": "15.5.18",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -24,7 +26,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.2",
+    "eslint-config-next": "15.5.18",
     "tailwindcss": "^4",
     "typescript": "^5",
     "wrangler": "^4.94.0"

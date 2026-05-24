@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <p className="text-xl font-black text-white mb-2">THE <span className="text-teal-400">JIU-JITSU LAB</span></p>
-          <p className="text-gray-400 text-sm">Waterloo's dedicated Brazilian Jiu-Jitsu academy.</p>
+          <p className="text-gray-400 text-sm">{`Waterloo's dedicated Brazilian Jiu-Jitsu academy`}.</p>
           <p className="text-gray-400 text-sm mt-1">Coached by a IBJJF World Champion.</p>
         </div>
         <div>
