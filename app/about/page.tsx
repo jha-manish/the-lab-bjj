@@ -172,33 +172,42 @@ export default function AboutPage() {
             />
           </div>
 
-          {/* Three-column row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+          {/* 2x2 grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <Image
                 src="/images/about/class-circle.jpg"
                 alt="Class circle on the mat"
                 fill
-                sizes="(max-width: 640px) 100vw, 384px"
+                sizes="(max-width: 640px) 100vw, 576px"
                 className="object-cover"
               />
             </div>
-            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <Image
                 src="/images/about/class-overhead.jpg"
                 alt="Overhead view of a class in session"
                 fill
-                sizes="(max-width: 640px) 100vw, 384px"
+                sizes="(max-width: 640px) 100vw, 576px"
                 className="object-cover"
               />
             </div>
-            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <Image
                 src="/images/about/sparring-session.jpg"
                 alt="Live sparring session"
                 fill
-                sizes="(max-width: 640px) 100vw, 384px"
+                sizes="(max-width: 640px) 100vw, 576px"
                 className="object-cover object-center"
+              />
+            </div>
+            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
+              <Image
+                src="/images/about/drilling.jpg"
+                alt="Drilling on the mat"
+                fill
+                sizes="(max-width: 640px) 100vw, 576px"
+                className="object-cover"
               />
             </div>
           </div>
