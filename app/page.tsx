@@ -28,10 +28,10 @@ export default function Home() {
       {/* Hero */}
       <section className="min-h-[92vh] flex items-center bg-zinc-950 relative overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center lg:bg-[center_right] opacity-90"
+          className="absolute inset-0 bg-[length:160%] md:bg-cover bg-center lg:bg-[center_right] opacity-30 md:opacity-90"
           style={{ backgroundImage: "url('/images/hero/hero-sparring.jpg')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/95 via-zinc-950/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/95 via-zinc-950/70 to-zinc-950/80 md:to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-black/50" />
         <div className="absolute inset-y-0 left-0 w-2/3 bg-[radial-gradient(ellipse_at_left,rgba(0,0,0,0.48),transparent_68%)]" />
 
