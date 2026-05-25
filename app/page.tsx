@@ -70,6 +70,10 @@ export default function Home() {
               <a href="mailto:support@labjiujitsu.com" className="hover:text-teal-300 transition-colors">
                 support@labjiujitsu.com
               </a>
+              {' '}|{' '}
+              <a href="sms:+12269893140" className="hover:text-teal-300 transition-colors">
+                💬 (226) 989-3140
+              </a>
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/book" className="bg-teal-500 hover:bg-teal-400 text-black font-black px-8 py-4 rounded text-lg transition-colors">

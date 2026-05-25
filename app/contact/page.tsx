@@ -131,13 +131,15 @@ export default function ContactPage() {
               </div>
 
               <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
-                <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest mb-4">Email Us</p>
-                <a
-                  href="mailto:support@labjiujitsu.com"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  support@labjiujitsu.com
-                </a>
+                <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest mb-4">Email or Text Us</p>
+                <div className="flex flex-col gap-2">
+                  <a href="mailto:support@labjiujitsu.com" className="text-gray-300 hover:text-white transition-colors">
+                    ✉️ support@labjiujitsu.com
+                  </a>
+                  <a href="sms:+12269893140" className="text-gray-300 hover:text-white transition-colors">
+                    💬 Text: (226) 989-3140
+                  </a>
+                </div>
               </div>
 
               <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">

@@ -116,6 +116,9 @@ export default function TermsOfService() {
               Questions about these terms? Contact us at{' '}
               <a href="mailto:support@labjiujitsu.com" className="text-teal-400 hover:text-teal-300 transition-colors">
                 support@labjiujitsu.com
+              </a>{' '}or text us at{' '}
+              <a href="sms:+12269893140" className="text-teal-400 hover:text-teal-300 transition-colors">
+                (226) 989-3140
               </a>.
             </p>
           </div>

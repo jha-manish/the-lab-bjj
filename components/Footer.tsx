@@ -31,6 +31,7 @@ export default function Footer() {
               📍 420 Weber St N, Waterloo, ON
             </a>
             <a href="mailto:support@labjiujitsu.com" className="hover:text-white transition-colors">support@labjiujitsu.com</a>
+            <a href="sms:+12269893140" className="hover:text-white transition-colors">💬 Text us: (226) 989-3140</a>
           </div>
         </div>
       </div>
