@@ -68,11 +68,15 @@ export default function Home() {
               </a>
               {' '}|{' '}
               <a href="mailto:support@labjiujitsu.com" className="hover:text-teal-300 transition-colors">
-                support@labjiujitsu.com
+                ✉️ support@labjiujitsu.com
               </a>
               {' '}|{' '}
               <a href="sms:+12269893140" className="hover:text-teal-300 transition-colors">
                 💬 (226) 989-3140
+              </a>
+              {' '}|{' '}
+              <a href="https://ig.me/m/thelabwaterloo" target="_blank" rel="noreferrer" className="hover:text-teal-300 transition-colors">
+                📸 Instagram
               </a>
             </p>
             <div className="flex flex-wrap gap-4">
