@@ -117,6 +117,17 @@ export default function ContactPage() {
 
             {/* Info panel */}
             <div className="flex flex-col gap-8">
+              <div className="bg-zinc-900 border border-teal-500/30 rounded-xl p-6">
+                <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest mb-4">Ready to Train?</p>
+                <p className="text-gray-400 text-sm mb-4">Skip the form — book your free trial and we&apos;ll connect on the mat.</p>
+                <Link
+                  href="/book"
+                  className="inline-block bg-teal-500 hover:bg-teal-400 text-black font-black px-6 py-3 rounded transition-colors text-sm"
+                >
+                  Book Free Trial →
+                </Link>
+              </div>
+
               <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
                 <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest mb-4">Find Us</p>
                 <a
@@ -140,17 +151,6 @@ export default function ContactPage() {
                     💬 Text: (226) 989-3140
                   </a>
                 </div>
-              </div>
-
-              <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
-                <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest mb-4">Ready to Train?</p>
-                <p className="text-gray-400 text-sm mb-4">Skip the form — book your free trial and we&apos;ll connect on the mat.</p>
-                <Link
-                  href="/book"
-                  className="inline-block bg-teal-500 hover:bg-teal-400 text-black font-black px-6 py-3 rounded transition-colors text-sm"
-                >
-                  Book Free Trial →
-                </Link>
               </div>
             </div>
 
