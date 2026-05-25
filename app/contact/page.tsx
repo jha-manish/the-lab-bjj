@@ -150,6 +150,9 @@ export default function ContactPage() {
                   <a href="sms:+12269893140" className="text-gray-300 hover:text-white transition-colors">
                     💬 Text: (226) 989-3140
                   </a>
+                  <a href="https://ig.me/m/thelabwaterloo" target="_blank" rel="noreferrer" className="text-gray-300 hover:text-white transition-colors">
+                    📸 DM on Instagram
+                  </a>
                 </div>
               </div>
             </div>
