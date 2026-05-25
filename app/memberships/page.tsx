@@ -95,10 +95,12 @@ export default function MembershipsPage() {
           </p>
 
           {/* Free Trial */}
-          <div className="mb-16 bg-zinc-900 border border-teal-500/30 rounded-xl p-6 max-w-xl">
-            <p className="text-xl font-bold mb-2">🎁 First Week Free</p>
-            <p className="text-gray-400">Every new member gets their first week completely free. No credit card required. Just show up and roll.</p>
-            <Link href="/book" className="inline-block mt-4 bg-teal-500 hover:bg-teal-400 text-black font-bold px-6 py-3 rounded transition-colors">
+          <div className="mb-16 bg-zinc-900 border border-teal-500/30 rounded-xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-xl font-bold mb-1">🎁 First Week Free</p>
+              <p className="text-gray-400 text-sm">No credit card required. Just show up and roll.</p>
+            </div>
+            <Link href="/book" className="shrink-0 bg-teal-500 hover:bg-teal-400 text-black font-bold px-6 py-3 rounded transition-colors whitespace-nowrap">
               Book Your Free Trial →
             </Link>
           </div>
