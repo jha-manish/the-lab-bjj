@@ -87,47 +87,55 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Train */}
+      {/* Why Train + Lineage */}
       <section className="bg-zinc-900 py-20">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-4xl font-black mb-4">Why Train at <span className="text-teal-400">The Jiu-Jitsu Lab?</span></h2>
-          <p className="text-gray-400 max-w-2xl mb-10 leading-relaxed">
-            Most gyms offer BJJ as one class among many. The Jiu-Jitsu Lab is built entirely around Brazilian Jiu-Jitsu —
-            every coach, every class, every program. That focus means faster progress, deeper instruction, and a tighter community.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mb-16">
-            {[
-              'IBJJF World Silver Medalist as Head Coach',
-              'Four world-level instructors',
-              'Rooted in 25+ years of BJJ history in KW',
-              'Dedicated Fundamentals classes for beginners',
-              'Kids, Women\'s, and Competition programs',
-              'Free trial week — no commitment',
-            ].map(item => (
-              <div key={item} className="flex items-start gap-3">
-                <span className="text-teal-400 mt-0.5">✓</span>
-                <span className="text-gray-300">{item}</span>
-              </div>
-            ))}
-          </div>
+          <div className="bg-zinc-950 border border-white/10 rounded-2xl p-8 grid grid-cols-1 lg:grid-cols-2 gap-12">
 
-          {/* Lineage callout — full width, more visual weight */}
-          <div className="bg-zinc-950 border border-white/10 rounded-2xl p-8 max-w-3xl">
-            <p className="text-teal-400 font-semibold tracking-widest text-xs uppercase mb-3">Lineage</p>
-            <h3 className="text-2xl font-black mb-4">Jacaré → Dragan → The Lab</h3>
-            <p className="text-gray-400 leading-relaxed mb-4">
-              In 1998, <span className="text-white font-semibold">Dragan Konjevic</span> — an Alliance black belt promoted by the legendary{' '}
-              <span className="text-white font-semibold">Romero &quot;Jacaré&quot; Cavalcanti</span> — opened the first BJJ gym in the Kitchener-Waterloo region
-              under the banner of Dragan Alliance. He was the first black belt in the region, and the first to bring jiu-jitsu here.
-            </p>
-            <p className="text-gray-400 leading-relaxed mb-6">
-              His students have gone on to win major titles and open multiple gyms across KW.
-              Nearly every black belt in the region today traces their roots back to him — including our own coaches.
-              Dragan still comes in to teach, and his presence is a reminder of where all of this started.
-            </p>
-            <Link href="/about" className="inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 font-semibold transition-colors">
-              Read the full story →
-            </Link>
+            {/* Why Train */}
+            <div>
+              <p className="text-teal-400 font-semibold tracking-widest text-xs uppercase mb-3">Why Us</p>
+              <h2 className="text-2xl font-black mb-4">Why Train at <span className="text-teal-400">The Jiu-Jitsu Lab?</span></h2>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                Most gyms offer BJJ as one class among many. The Jiu-Jitsu Lab is built entirely around Brazilian Jiu-Jitsu —
+                every coach, every class, every program. That focus means faster progress, deeper instruction, and a tighter community.
+              </p>
+              <div className="flex flex-col gap-3">
+                {[
+                  'IBJJF World Silver Medalist as Head Coach',
+                  'Four world-level instructors',
+                  'Rooted in 25+ years of BJJ history in KW',
+                  'Dedicated Fundamentals classes for beginners',
+                  'Kids, Women\'s, and Competition programs',
+                  'Free trial week — no commitment',
+                ].map(item => (
+                  <div key={item} className="flex items-start gap-3">
+                    <span className="text-teal-400 mt-0.5 shrink-0">✓</span>
+                    <span className="text-gray-300">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Lineage */}
+            <div className="border-t border-white/10 pt-8 lg:border-t-0 lg:pt-0 lg:border-l lg:pl-12">
+              <p className="text-teal-400 font-semibold tracking-widest text-xs uppercase mb-3">Lineage</p>
+              <h3 className="text-2xl font-black mb-4">Jacaré → Dragan → The Lab</h3>
+              <p className="text-gray-400 leading-relaxed mb-4">
+                In 1998, <span className="text-white font-semibold">Dragan Konjevic</span> — an Alliance black belt promoted by the legendary{' '}
+                <span className="text-white font-semibold">Romero &quot;Jacaré&quot; Cavalcanti</span> — opened the first BJJ gym in the Kitchener-Waterloo region
+                under the banner of Dragan Alliance. He was the first black belt in the region, and the first to bring jiu-jitsu here.
+              </p>
+              <p className="text-gray-400 leading-relaxed mb-6">
+                His students have gone on to win major titles and open multiple gyms across KW.
+                Nearly every black belt in the region today traces their roots back to him — including our own coaches.
+                Dragan still comes in to teach, and his presence is a reminder of where all of this started.
+              </p>
+              <Link href="/about" className="inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 font-semibold transition-colors">
+                Read the full story →
+              </Link>
+            </div>
+
           </div>
         </div>
       </section>
