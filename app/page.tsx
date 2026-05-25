@@ -83,7 +83,7 @@ export default function Home() {
               <Link href="/book" className="bg-teal-500 hover:bg-teal-400 text-black font-black px-8 py-4 rounded text-lg transition-colors">
                 BOOK YOUR FREE TRIAL
               </Link>
-              <Link href="/programs" className="border border-white/30 bg-black/20 hover:bg-white/10 hover:border-white text-white font-semibold px-8 py-4 rounded text-lg transition-colors">
+              <Link href="/memberships" className="border border-white/30 bg-black/20 hover:bg-white/10 hover:border-white text-white font-semibold px-8 py-4 rounded text-lg transition-colors">
                 View Programs
               </Link>
             </div>
@@ -157,7 +157,7 @@ export default function Home() {
             ))}
           </div>
           <div className="mt-8 text-center">
-            <Link href="/programs" className="text-teal-400 hover:text-teal-300 font-semibold transition-colors">
+            <Link href="/memberships" className="text-teal-400 hover:text-teal-300 font-semibold transition-colors">
               View all programs →
             </Link>
           </div>
