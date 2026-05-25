@@ -128,16 +128,16 @@ export default function ContactPage() {
                 </Link>
               </div>
 
-              <div className="bg-zinc-900 border border-white/10 rounded-xl p-6">
-                <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest mb-4">Find Us</p>
+              <div className="bg-zinc-900 border border-white/10 rounded-xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest">Find Us</p>
                 <a
                   href="https://maps.app.goo.gl/aJwg6Sc1smkmKRTz7"
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-start gap-3 text-gray-300 hover:text-white transition-colors"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors shrink-0"
                 >
                   <span className="text-xl">📍</span>
-                  <span className="leading-relaxed">420 Weber St N<br />Waterloo, ON</span>
+                  <span>420 Weber St N, Waterloo, ON</span>
                 </a>
               </div>
 
