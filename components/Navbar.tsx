@@ -10,6 +10,7 @@ const links = [
   { href: '/memberships', label: 'Memberships' },
   { href: '/schedule', label: 'Schedule' },
   { href: '/shop', label: 'Shop' },
+  { href: '/contact', label: 'Contact' },
 ]
 
 export default function Navbar() {

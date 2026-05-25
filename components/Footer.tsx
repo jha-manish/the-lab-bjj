@@ -12,11 +12,11 @@ export default function Footer() {
         <div>
           <p className="text-white font-semibold mb-3">Quick Links</p>
           <div className="flex flex-col gap-2 text-sm text-gray-400">
-            <Link href="/programs" className="hover:text-white transition-colors">Programs</Link>
+            <Link href="/memberships" className="hover:text-white transition-colors">Memberships</Link>
             <Link href="/schedule" className="hover:text-white transition-colors">Schedule</Link>
-            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
             <Link href="/about" className="hover:text-white transition-colors">About</Link>
             <Link href="/book" className="hover:text-white transition-colors">Book Free Trial</Link>
+            <Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link>
           </div>
         </div>
         <div>
@@ -30,7 +30,9 @@ export default function Footer() {
             >
               📍 420 Weber St N, Waterloo, ON
             </a>
-            <a href="mailto:support@labjiujitsu.com" className="hover:text-white transition-colors">support@labjiujitsu.com</a>
+            <a href="mailto:support@labjiujitsu.com" className="hover:text-white transition-colors">✉️ support@labjiujitsu.com</a>
+            <a href="sms:+12269893140" className="hover:text-white transition-colors">💬 Text us: (226) 989-3140</a>
+            <a href="https://ig.me/m/thelabwaterloo" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">📸 DM us on Instagram</a>
           </div>
         </div>
       </div>
