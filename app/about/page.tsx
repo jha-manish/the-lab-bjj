@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
+import InstagramFeed from '@/components/InstagramFeed'
 
 export const metadata: Metadata = {
   title: 'About | The Jiu-Jitsu Lab Waterloo',
@@ -233,6 +234,8 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      <InstagramFeed />
 
       <section className="bg-zinc-900 py-16">
         <div className="max-w-6xl mx-auto px-4 text-center">
