@@ -65,7 +65,10 @@ export default function BookPage() {
               <span className="text-teal-400">✓</span> All levels welcome
             </div>
             <div className="flex items-center gap-2 text-gray-300">
-              <span className="text-teal-400">✓</span> Free parking · Change rooms on site
+              <span className="text-teal-400">✓</span> Free parking
+            </div>
+            <div className="flex items-center gap-2 text-gray-300">
+              <span className="text-teal-400">✓</span> Change rooms & showers on site
             </div>
           </div>
 
