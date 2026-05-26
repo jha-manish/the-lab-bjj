@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 const SQUARE_BASE = 'https://book.squareup.com/appointments/nh5lp9kyixo0m7/location/LGBKZ7SQXNB33/services'
+const SQUARE_SUFFIX = '/availability'
 
 const classes = [
   {
@@ -72,7 +73,7 @@ export default function BookPage() {
             {classes.map(c => (
               <a
                 key={c.id}
-                href={`${SQUARE_BASE}/${c.id}`}
+                href={`${SQUARE_BASE}/${c.id}${SQUARE_SUFFIX}`}
                 target="_blank"
                 rel="noreferrer"
                 className="bg-zinc-900 border border-white/10 hover:border-teal-500 rounded-xl p-6 flex flex-col gap-3 transition-colors group"
