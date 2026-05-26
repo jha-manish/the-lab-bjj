@@ -1,54 +1,14 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { fetchCatalogItems, isWebsiteMembershipItem } from '@/lib/square'
+
+export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Memberships | The Jiu-Jitsu Lab Waterloo',
   description: 'BJJ memberships in Waterloo, ON. Adult unlimited from $135/month. Student and Kids rates available. First week free — no commitment.',
 }
-
-const memberships = [
-  {
-    name: 'Adult Unlimited',
-    price: 135,
-    highlight: true,
-    who: 'Adults of all levels — beginners to competitors',
-    includes: [
-      'All weeknight classes (Mon–Fri)',
-      'Beginners class every weeknight (Mon–Fri)',
-      'Regular all-levels class every weeknight (Mon–Thu)',
-      "Women's Only class (Fridays)",
-      'Q&A / Drilling (Fridays)',
-      'Open Mat (Fridays — free)',
-      'No-Gi with Dave Knowles (Saturdays)',
-      'Competition class with Dave Knowles (Sundays)',
-    ],
-    href: '/shop',
-  },
-  {
-    name: 'Student Rate',
-    price: 119,
-    highlight: false,
-    who: 'Full-time students with valid UW or Laurier ID',
-    includes: [
-      'Everything in Adult Unlimited',
-      'Valid student ID required at sign-up',
-    ],
-    href: '/shop',
-  },
-  {
-    name: 'Kids BJJ',
-    price: 120,
-    highlight: false,
-    who: 'Ages 5–15',
-    includes: [
-      'Kids BJJ class every weeknight (5–6 PM)',
-      'Led by Black Belt Roger Morais',
-      'Age-appropriate curriculum',
-      'Builds confidence, discipline & self-defence',
-    ],
-    href: '/shop',
-  },
-]
 
 const commitmentTiers = [
   { months: 3,  discount: 0.10, label: '3 Months', badge: '10% off' },
@@ -56,14 +16,44 @@ const commitmentTiers = [
   { months: 12, discount: 0.20, label: '1 Year',   badge: '20% off' },
 ]
 
-const membershipBases = [
-  { name: 'Adult Unlimited', monthly: 135 },
-  { name: 'Student Rate',    monthly: 119 },
-  { name: 'Kids BJJ',        monthly: 120 },
-]
-
 function fmt(n: number) {
   return n % 1 === 0 ? `$${n}` : `$${n.toFixed(2)}`
+}
+
+function fmtCents(cents: number) {
+  return fmt(cents / 100)
+}
+
+function fmtMonthlyPrice(cents: number) {
+  return cents > 0 ? fmtCents(cents) : 'Contact us'
+}
+
+async function getMemberships() {
+  try {
+    const items = await fetchCatalogItems()
+
+    return items.filter(isWebsiteMembershipItem).map((item) => {
+      const attrs = item.itemData.websiteCustomAttributes
+      const variation = item.itemData.variations[0]
+      const amount = variation?.itemVariationData?.priceMoney?.amount
+      const priceCents = amount ? parseInt(amount, 10) : 0
+
+      return {
+        id: item.id,
+        variationId: variation?.id,
+        variationName: variation?.itemVariationData?.name,
+        amount,
+        name: attrs.name!,
+        priceCents,
+        highlight: attrs.emphasis ?? false,
+        who: attrs.description!.descriptionText,
+        includes: attrs.description!.includes,
+      }
+    })
+  } catch (err) {
+    console.error('Square memberships error:', err)
+    return []
+  }
 }
 
 const extras = [
@@ -83,7 +73,12 @@ const extras = [
   },
 ]
 
-export default function MembershipsPage() {
+export default async function MembershipsPage() {
+  const memberships = await getMemberships()
+  const membershipBases = memberships
+    .filter((membership) => membership.priceCents > 0)
+    .map((membership) => ({ name: membership.name, monthlyCents: membership.priceCents }))
+
   return (
     <>
       <section className="bg-zinc-950 py-20">
@@ -107,6 +102,11 @@ export default function MembershipsPage() {
 
           {/* Membership cards */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
+            {memberships.length === 0 && (
+              <div className="lg:col-span-3 bg-zinc-900 border border-white/10 rounded-xl p-6 text-gray-400">
+                Memberships are unavailable right now. Please contact us directly to get started.
+              </div>
+            )}
             {memberships.map(m => (
               <div
                 key={m.name}
@@ -116,8 +116,10 @@ export default function MembershipsPage() {
                 <div className={`px-6 py-5 ${m.highlight ? 'bg-teal-500' : 'bg-zinc-800'}`}>
                   <p className={`text-sm font-semibold mb-1 ${m.highlight ? 'text-black/70' : 'text-teal-400'}`}>{m.name}</p>
                   <div className="flex items-baseline gap-1">
-                    <span className={`text-4xl font-black ${m.highlight ? 'text-black' : 'text-white'}`}>${m.price}</span>
-                    <span className={`text-sm ${m.highlight ? 'text-black/60' : 'text-gray-500'}`}>/month</span>
+                    <span className={`text-4xl font-black ${m.highlight ? 'text-black' : 'text-white'}`}>{fmtMonthlyPrice(m.priceCents)}</span>
+                    {m.priceCents > 0 && (
+                      <span className={`text-sm ${m.highlight ? 'text-black/60' : 'text-gray-500'}`}>/month</span>
+                    )}
                   </div>
                   <p className={`text-sm mt-2 ${m.highlight ? 'text-black/70' : 'text-gray-400'}`}>{m.who}</p>
                 </div>
@@ -138,7 +140,7 @@ export default function MembershipsPage() {
                 {/* CTA */}
                 <div className="bg-zinc-900 px-6 pb-6 pt-4 border-t border-white/5">
                   <Link
-                    href={m.href}
+                    href={`/shop?category=memberships&itemId=${encodeURIComponent(m.id)}${m.variationId ? `&variationId=${encodeURIComponent(m.variationId)}` : ''}&membership=${encodeURIComponent(m.name)}${m.variationName ? `&variation=${encodeURIComponent(m.variationName)}` : ''}${m.amount ? `&amount=${encodeURIComponent(m.amount)}` : ''}`}
                     className={`block text-center font-black text-sm px-4 py-3 rounded transition-colors ${
                       m.highlight
                         ? 'bg-teal-500 hover:bg-teal-400 text-black'
@@ -173,7 +175,7 @@ export default function MembershipsPage() {
                 </div>
                 <div className="bg-zinc-900 flex flex-col divide-y divide-white/5 flex-1">
                   {membershipBases.map((mp) => {
-                    const total = mp.monthly * tier.months * (1 - tier.discount)
+                    const total = (mp.monthlyCents / 100) * tier.months * (1 - tier.discount)
                     const perMonth = total / tier.months
                     return (
                       <div key={mp.name} className="px-6 py-4">
@@ -188,7 +190,7 @@ export default function MembershipsPage() {
                 </div>
                 <div className="bg-zinc-900 px-6 pb-6 pt-2">
                   <Link
-                    href="/shop"
+                    href="/shop?category=memberships"
                     className={`block text-center font-black text-sm px-4 py-3 rounded transition-colors ${
                       tier.popular
                         ? 'bg-teal-500 hover:bg-teal-400 text-black'

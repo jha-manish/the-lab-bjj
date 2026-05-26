@@ -70,7 +70,7 @@ export default function BookPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {classes.map(c => (
+            {classes.map((c) => (
               <div
                 key={c.id}
                 className="bg-zinc-900 border border-white/10 rounded-xl p-6 flex flex-col gap-3"

@@ -41,6 +41,16 @@ interface CatalogItem {
     name?: string
     description?: string
     productType?: string
+    websiteCustomAttributes?: {
+      name?: string
+      display?: boolean
+      emphasis?: boolean
+      merch?: boolean
+      description?: {
+        descriptionText: string
+        includes: string[]
+      }
+    }
     variations?: CatalogVariation[]
   }
 }
@@ -80,23 +90,123 @@ function getNext7Days() {
 }
 
 interface BookingFlowProps {
+  /** Catalog data fetched by the server page, used to avoid a client-side loading gap */
+  initialCatalogItems?: CatalogItem[]
   /** Pre-select a category and skip the picker step */
   initialCategory?: Category
+  /** Pre-select a catalog item by Square ID once catalog data has loaded */
+  initialItemId?: string
+  /** Pre-select a catalog item once Square catalog data has loaded */
+  initialItemName?: string
+  /** Prefer a matching variation by Square ID */
+  initialVariationId?: string
+  /** Prefer a matching variation when a pre-selected item has multiple options */
+  initialVariationName?: string
+  /** Prefer a matching variation by price, in cents */
+  initialAmount?: string
   /** Restrict which categories are shown in the picker */
   allowedCategories?: Category[]
   /** Hide prices and skip payment — just create the booking */
   freeTrial?: boolean
 }
 
-export default function BookingFlow({ initialCategory, allowedCategories, freeTrial }: BookingFlowProps) {
+function normalizeCatalogName(value: string | undefined) {
+  return value?.toLowerCase().replace(/[^a-z0-9]/g, '') ?? ''
+}
+
+function isWebsiteMerchItem(item: CatalogItem) {
+  const attrs = item.itemData?.websiteCustomAttributes
+  return attrs?.display === true && attrs.merch === true
+}
+
+function isWebsiteMembershipItem(item: CatalogItem) {
+  const attrs = item.itemData?.websiteCustomAttributes
+  return Boolean(
+    attrs?.merch !== true &&
+    attrs?.name &&
+    Object.hasOwn(attrs, 'emphasis') &&
+    attrs.description?.descriptionText
+  )
+}
+
+function filterItemsForCategory(all: CatalogItem[], category: Category) {
+  return all.filter((item) => {
+    const pt = item.itemData?.productType ?? ''
+    if (category === 'privates') return pt === 'APPOINTMENTS_SERVICE'
+    if (category === 'dropins') return pt === 'APPOINTMENTS_SERVICE'
+    if (category === 'memberships') return isWebsiteMembershipItem(item)
+    if (category === 'merch') return isWebsiteMerchItem(item)
+    return true
+  })
+}
+
+function findInitialSelection(
+  items: CatalogItem[],
+  initialItemId: string | undefined,
+  initialItemName: string | undefined,
+  initialVariationId: string | undefined,
+  initialVariationName: string | undefined,
+  initialAmount: string | undefined
+) {
+  if (!initialItemId && !initialItemName) return undefined
+
+  const requestedItem = normalizeCatalogName(initialItemName)
+  const item =
+    items.find((catalogItem) => catalogItem.id === initialItemId) ??
+    items.find((catalogItem) => requestedItem && normalizeCatalogName(catalogItem.itemData?.name) === requestedItem) ??
+    items.find((catalogItem) => {
+      const catalogName = normalizeCatalogName(catalogItem.itemData?.name)
+      return requestedItem.length > 0 && catalogName.length > 0 && (catalogName.includes(requestedItem) || requestedItem.includes(catalogName))
+    })
+
+  if (!item) return undefined
+
+  const variations = item.itemData?.variations ?? []
+  const requestedVariation = normalizeCatalogName(initialVariationName)
+  const variation =
+    variations.find((v) => v.id === initialVariationId) ??
+    variations.find((v) => initialAmount && v.itemVariationData?.priceMoney?.amount === initialAmount) ??
+    variations.find((v) => requestedVariation && normalizeCatalogName(v.itemVariationData?.name) === requestedVariation) ??
+    variations.find((v) => normalizeCatalogName(v.itemVariationData?.name) === 'monthly') ??
+    variations.find((v) => normalizeCatalogName(v.itemVariationData?.name) === 'standard') ??
+    variations[0]
+
+  return variation ? { item, variation } : undefined
+}
+
+export default function BookingFlow({
+  initialCatalogItems,
+  initialCategory,
+  initialItemId,
+  initialItemName,
+  initialVariationId,
+  initialVariationName,
+  initialAmount,
+  allowedCategories,
+  freeTrial,
+}: BookingFlowProps) {
+  const initialItems = initialCatalogItems && initialCategory ? filterItemsForCategory(initialCatalogItems, initialCategory) : []
+  const initialSelection = findInitialSelection(
+    initialItems,
+    initialItemId,
+    initialItemName,
+    initialVariationId,
+    initialVariationName,
+    initialAmount
+  )
+
   const [step, setStep] = useState<'category' | 'service' | 'datetime' | 'details' | 'payment' | 'confirm'>(
-    initialCategory ? 'service' : 'category'
+    initialCategory
+      ? initialSelection
+        ? CATEGORY_META[initialCategory].bookable ? 'datetime' : 'details'
+        : 'service'
+      : 'category'
   )
   const [category, setCategory] = useState<Category | null>(initialCategory ?? null)
-  const [items, setItems] = useState<CatalogItem[]>([])
+  const [items, setItems] = useState<CatalogItem[]>(initialItems)
   const [loadingItems, setLoadingItems] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null)
-  const [selectedVariation, setSelectedVariation] = useState<CatalogVariation | null>(null)
+  const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(initialSelection?.item ?? null)
+  const [selectedVariation, setSelectedVariation] = useState<CatalogVariation | null>(initialSelection?.variation ?? null)
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
@@ -115,25 +225,46 @@ export default function BookingFlow({ initialCategory, allowedCategories, freeTr
   // Load catalog when category chosen
   useEffect(() => {
     if (!category) return
+
+    if (initialCatalogItems) {
+      setItems(filterItemsForCategory(initialCatalogItems, category))
+      return
+    }
+
     setLoadingItems(true)
     fetch('/api/square/catalog')
       .then((r) => r.json())
       .then((data) => {
         const all: CatalogItem[] = data.items ?? []
-        // Filter by product type based on category
-        const filtered = all.filter((item) => {
-          const pt = item.itemData?.productType ?? ''
-          if (category === 'privates') return pt === 'APPOINTMENTS_SERVICE'
-          if (category === 'dropins') return pt === 'APPOINTMENTS_SERVICE'
-          if (category === 'memberships') return pt === 'REGULAR' || pt === ''
-          if (category === 'merch') return pt === 'REGULAR' || pt === ''
-          return true
-        })
-        setItems(filtered)
+        setItems(filterItemsForCategory(all, category))
       })
       .catch(() => setError('Failed to load services'))
       .finally(() => setLoadingItems(false))
-  }, [category])
+  }, [category, initialCatalogItems])
+
+  // Deep links from pages like /memberships can skip the service picker once
+  // the matching Square catalog item and variation are available.
+  useEffect(() => {
+    if (!category || (!initialItemId && !initialItemName) || loadingItems || selectedItem || items.length === 0) return
+
+    const initialSelection = findInitialSelection(
+      items,
+      initialItemId,
+      initialItemName,
+      initialVariationId,
+      initialVariationName,
+      initialAmount
+    )
+
+    if (!initialSelection) {
+      setError(`We couldn't find "${initialItemName ?? 'that item'}" in the Square catalog. Please choose an option below.`)
+      return
+    }
+
+    setSelectedItem(initialSelection.item)
+    setSelectedVariation(initialSelection.variation)
+    setStep(CATEGORY_META[category].bookable ? 'datetime' : 'details')
+  }, [category, initialAmount, initialItemId, initialItemName, initialVariationId, initialVariationName, items, loadingItems, selectedItem])
 
   // Load slots when date selected
   useEffect(() => {
