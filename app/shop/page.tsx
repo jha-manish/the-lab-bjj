@@ -6,7 +6,31 @@ export const metadata: Metadata = {
   description: 'Book private training, get a membership, or shop academy merch at The Jiu-Jitsu Lab in Waterloo, ON.',
 }
 
-export default function ShopPage() {
+type ShopCategory = 'privates' | 'memberships' | 'merch'
+
+interface ShopPageProps {
+  searchParams?: Promise<{
+    category?: string
+    itemId?: string
+    membership?: string
+    variationId?: string
+    variation?: string
+    amount?: string
+  }>
+}
+
+function getInitialCategory(category: string | undefined): ShopCategory | undefined {
+  if (category === 'privates' || category === 'memberships' || category === 'merch') {
+    return category
+  }
+
+  return undefined
+}
+
+export default async function ShopPage({ searchParams }: ShopPageProps) {
+  const params = await searchParams
+  const initialCategory = getInitialCategory(params?.category)
+
   return (
     <section className="bg-zinc-950 py-20">
       <div className="max-w-3xl mx-auto px-4">
@@ -17,7 +41,15 @@ export default function ShopPage() {
         </p>
 
         <div className="bg-zinc-900 border border-white/10 rounded-xl p-8">
-          <BookingFlow allowedCategories={['privates', 'memberships', 'merch']} />
+          <BookingFlow
+            allowedCategories={['privates', 'memberships', 'merch']}
+            initialCategory={initialCategory}
+            initialItemId={params?.itemId}
+            initialItemName={params?.membership}
+            initialVariationId={params?.variationId}
+            initialVariationName={params?.variation}
+            initialAmount={params?.amount}
+          />
         </div>
       </div>
     </section>
