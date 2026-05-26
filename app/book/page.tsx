@@ -89,7 +89,7 @@ export default function BookPage() {
                 )}
                 <p className="text-teal-400 text-xs font-semibold">🕐 {c.time}</p>
                 <a
-                  href={`${SQUARE_BASE}/${c.id}/availability`}
+                  href={`${SQUARE_BASE}/${c.id}`}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-1 block text-center bg-teal-500 hover:bg-teal-400 text-black font-black text-sm px-4 py-2.5 rounded transition-colors"
