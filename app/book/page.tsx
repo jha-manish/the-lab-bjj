@@ -15,6 +15,7 @@ const classes = [
     desc: 'All-levels class covering technique, drilling, and live rolling. Beginners are always welcome — our coaches make sure no one gets left behind.',
     time: 'Mon–Thu · 7:00–8:30 PM',
     level: 'All Levels',
+    tip: "Can't make the 6 PM Beginner's Class? This is your next best option.",
     id: 'AHYKA2XF5A2PBNCSMOCLQMLF',
   },
   {
@@ -70,25 +71,32 @@ export default function BookPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {classes.map(c => (
-              <a
+              <div
                 key={c.id}
-                href={`${SQUARE_AVAILABILITY}?serviceId=${c.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-zinc-900 border border-white/10 hover:border-teal-500 rounded-xl p-6 flex flex-col gap-3 transition-colors group"
+                className="bg-zinc-900 border border-white/10 rounded-xl p-6 flex flex-col gap-3"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-black text-lg group-hover:text-teal-400 transition-colors">{c.name}</h2>
+                  <h2 className="font-black text-lg">{c.name}</h2>
                   <span className={`text-xs px-2 py-0.5 rounded font-semibold whitespace-nowrap shrink-0 ${levelColors[c.level]}`}>
                     {c.level}
                   </span>
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed flex-1">{c.desc}</p>
+                {'tip' in c && c.tip && (
+                  <p className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-3 py-2 font-semibold">
+                    💡 {c.tip}
+                  </p>
+                )}
                 <p className="text-teal-400 text-xs font-semibold">🕐 {c.time}</p>
-                <span className="mt-1 block text-center bg-teal-500 group-hover:bg-teal-400 text-black font-black text-sm px-4 py-2.5 rounded transition-colors">
+                <a
+                  href={`${SQUARE_AVAILABILITY}?serviceId=${c.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 block text-center bg-teal-500 hover:bg-teal-400 text-black font-black text-sm px-4 py-2.5 rounded transition-colors"
+                >
                   Book Free Trial →
-                </span>
-              </a>
+                </a>
+              </div>
             ))}
           </div>
         </div>
