@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import BookingFlow from '@/components/BookingFlow'
+
+const SQUARE_BOOKING_URL = 'https://book.squareup.com/appointments/nh5lp9kyixo0m7/location/LGBKZ7SQXNB33/services'
 
 export const metadata: Metadata = {
   title: 'Book a Free Trial | The Jiu-Jitsu Lab Waterloo',
@@ -29,8 +30,18 @@ export default function BookPage() {
             </div>
           </div>
 
-          <div className="bg-zinc-900 border border-white/10 rounded-xl p-8">
-            <BookingFlow initialCategory="dropins" freeTrial />
+          <div className="bg-zinc-900 border border-teal-500/30 rounded-xl p-8 text-center">
+            <p className="text-2xl font-black mb-2">🎁 First Week Free</p>
+            <p className="text-gray-400 mb-8">Pick a class, pick a time, show up. No credit card required.</p>
+            <a
+              href={SQUARE_BOOKING_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block bg-teal-500 hover:bg-teal-400 text-black font-black px-10 py-4 rounded text-lg transition-colors"
+            >
+              Choose Your Class & Time →
+            </a>
+            <p className="text-gray-500 text-xs mt-4">You&apos;ll be taken to our secure Square booking page.</p>
           </div>
         </div>
       </section>

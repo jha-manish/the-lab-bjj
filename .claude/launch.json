@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "the-lab-bjj",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "/Users/manishjha/code/the-lab-bjj/.claude/worktrees/intelligent-buck-b376a4",
+      "port": 3000,
+      "autoPort": false
+    }
+  ]
+}
