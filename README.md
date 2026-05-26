@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The Lab BJJ
+
+Next.js site for The Jiu-Jitsu Lab Waterloo.
 
 ## Getting Started
 
-First, run the development server:
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Square Catalog Data
 
-## Learn More
+Catalog data is fetched through `lib/square.ts` using Square's `SearchCatalogItems` endpoint. The site fetches:
 
-To learn more about Next.js, take a look at the following resources:
+- Item-library entries where `website_display` is enabled.
+- Appointment services by `product_types: ['APPOINTMENTS_SERVICE']`, because booking services do not need website custom attributes.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The fetched catalog is shared by memberships, shop, free-trial booking, and `/api/square/catalog`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Custom Attributes
 
-## Deploy on Vercel
+These Square custom attributes control which item-library entries appear on the website:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `website_display` controls whether an item-library entry is shown on the site.
+- `website_merch` controls whether a displayed item-library entry appears under `Shop > Merch`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Memberships are displayed when `website_display` is enabled and `website_merch` is not enabled. Merch is displayed only when both `website_display` and `website_merch` are enabled.
+
+### Membership Items
+
+Memberships appear on `/memberships` and under `Shop > Memberships`.
+
+The item's first variation is used for the displayed price and selected purchasable option.
+
+### Merch Items
+
+Merch appears under `Shop > Merch`.
+
+## Catalog Cache
+
+`fetchCatalogItems()` uses a backend in-memory cache stored on `globalThis`.
+
+- Cache TTL: 5 minutes.
+- In-flight Square requests are shared so concurrent requests do not stampede Square.
+- The cache is per server runtime/instance. It is not browser storage and is not shared between separate users' browsers.
+- Server-rendered pages still receive catalog data before HTML is sent, so the cache does not prevent search engines from seeing rendered content. The tradeoff is freshness: catalog changes may take up to 5 minutes to appear.
+
+In development, clear the cache with:
+
+```bash
+curl -X POST http://localhost:3000/api/dev/clear-square-cache
+```
+
+The cache-clear endpoint returns `404` in production.

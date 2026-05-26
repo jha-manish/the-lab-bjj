@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
 import BookingFlow from '@/components/BookingFlow'
+import { fetchCatalogItems } from '@/lib/square'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Shop | The Jiu-Jitsu Lab Waterloo',
@@ -30,6 +33,10 @@ function getInitialCategory(category: string | undefined): ShopCategory | undefi
 export default async function ShopPage({ searchParams }: ShopPageProps) {
   const params = await searchParams
   const initialCategory = getInitialCategory(params?.category)
+  const initialCatalogItems = await fetchCatalogItems().catch((err) => {
+    console.error('Square catalog preload error:', err)
+    return undefined
+  })
 
   return (
     <section className="bg-zinc-950 py-20">
@@ -42,6 +49,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
         <div className="bg-zinc-900 border border-white/10 rounded-xl p-8">
           <BookingFlow
+            initialCatalogItems={initialCatalogItems}
             allowedCategories={['privates', 'memberships', 'merch']}
             initialCategory={initialCategory}
             initialItemId={params?.itemId}

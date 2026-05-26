@@ -24,13 +24,27 @@ export interface WebsiteDescription {
 
 export interface WebsiteCustomAttributes {
   name?: string
+  display?: boolean
   emphasis?: boolean
+  merch?: boolean
   description?: WebsiteDescription
 }
 
 type CatalogItem = ReturnType<typeof transformItem>
 
 const WEBSITE_DISPLAY_CUSTOM_ATTRIBUTE_DEFINITION_ID = '6HHNPNJ4LVXOSD5SI4FKPGTM'
+const WEBSITE_MERCH_CUSTOM_ATTRIBUTE_DEFINITION_ID = 'FDEKYIIVAIBTD23ZKIZOYUBN'
+const CATALOG_CACHE_TTL_MS = 5 * 60 * 1000
+
+interface CatalogCache {
+  expiresAt: number
+  items?: CatalogItem[]
+  promise?: Promise<CatalogItem[]>
+}
+
+const globalCatalogCache = globalThis as typeof globalThis & {
+  __theLabCatalogCacheV4?: CatalogCache
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -46,6 +60,16 @@ function getCustomAttribute(obj: Record<string, unknown>, key: string) {
 
     return attribute.key === key || attribute.name === key
   })?.[1]
+}
+
+function getCustomAttributeByDefinitionId(obj: Record<string, unknown>, definitionId: string) {
+  const values = obj.custom_attribute_values
+  if (!isRecord(values)) return undefined
+
+  return Object.values(values).find((attribute) => {
+    if (!isRecord(attribute)) return false
+    return attribute.custom_attribute_definition_id === definitionId
+  })
 }
 
 function getCustomAttributeRawValue(attribute: unknown): unknown {
@@ -128,11 +152,19 @@ function tryParseJson(value: string) {
 function extractWebsiteCustomAttributes(obj: Record<string, unknown>): WebsiteCustomAttributes {
   const attrs: WebsiteCustomAttributes = {}
   const name = parseStringAttribute(getCustomAttribute(obj, 'website_name'))
+  const display = parseBooleanAttribute(
+    getCustomAttribute(obj, 'website_display') ?? getCustomAttributeByDefinitionId(obj, WEBSITE_DISPLAY_CUSTOM_ATTRIBUTE_DEFINITION_ID)
+  )
   const emphasis = parseBooleanAttribute(getCustomAttribute(obj, 'website_emphasis'))
+  const merch = parseBooleanAttribute(
+    getCustomAttribute(obj, 'website_merch') ?? getCustomAttributeByDefinitionId(obj, WEBSITE_MERCH_CUSTOM_ATTRIBUTE_DEFINITION_ID)
+  )
   const description = parseDescriptionAttribute(getCustomAttribute(obj, 'website_description'))
 
   if (name) attrs.name = name
+  if (display !== undefined) attrs.display = display
   if (emphasis !== undefined) attrs.emphasis = emphasis
+  if (merch !== undefined) attrs.merch = merch
   if (description) attrs.description = description
 
   return attrs
@@ -184,9 +216,15 @@ export function hasWebsiteName(item: CatalogItem) {
   return Boolean(item.itemData.websiteCustomAttributes.name)
 }
 
+export function isWebsiteMerchItem(item: CatalogItem) {
+  const attrs = item.itemData.websiteCustomAttributes
+  return attrs.display === true && attrs.merch === true
+}
+
 export function isWebsiteMembershipItem(item: CatalogItem) {
   const attrs = item.itemData.websiteCustomAttributes
   return Boolean(
+    attrs.merch !== true &&
     attrs.name &&
     Object.hasOwn(attrs, 'emphasis') &&
     attrs.description?.descriptionText
@@ -194,6 +232,41 @@ export function isWebsiteMembershipItem(item: CatalogItem) {
 }
 
 export async function fetchCatalogItems() {
+  const now = Date.now()
+  const cached = globalCatalogCache.__theLabCatalogCacheV4
+
+  if (cached?.items && cached.expiresAt > now) {
+    return cached.items
+  }
+
+  if (cached?.promise && cached.expiresAt > now) {
+    return cached.promise
+  }
+
+  const promise = fetchFreshCatalogItems()
+  globalCatalogCache.__theLabCatalogCacheV4 = {
+    expiresAt: now + CATALOG_CACHE_TTL_MS,
+    promise,
+  }
+
+  try {
+    const items = await promise
+    globalCatalogCache.__theLabCatalogCacheV4 = {
+      expiresAt: Date.now() + CATALOG_CACHE_TTL_MS,
+      items,
+    }
+    return items
+  } catch (err) {
+    globalCatalogCache.__theLabCatalogCacheV4 = undefined
+    throw err
+  }
+}
+
+export function clearCatalogItemsCache() {
+  globalCatalogCache.__theLabCatalogCacheV4 = undefined
+}
+
+async function searchCatalogItems(body: Record<string, unknown>) {
   const items: CatalogItem[] = []
   let cursor: string | undefined
 
@@ -201,12 +274,7 @@ export async function fetchCatalogItems() {
     const res = await squareFetch('/catalog/search-catalog-items', {
       method: 'POST',
       body: JSON.stringify({
-        custom_attribute_filters: [
-          {
-            custom_attribute_definition_id: WEBSITE_DISPLAY_CUSTOM_ATTRIBUTE_DEFINITION_ID,
-            bool_filter: true,
-          },
-        ],
+        ...body,
         limit: 100,
         ...(cursor ? { cursor } : {}),
       }),
@@ -229,6 +297,28 @@ export async function fetchCatalogItems() {
   } while (cursor)
 
   return items
+}
+
+async function fetchFreshCatalogItems() {
+  const [displayItems, appointmentServices] = await Promise.all([
+    searchCatalogItems({
+      custom_attribute_filters: [
+        {
+          custom_attribute_definition_id: WEBSITE_DISPLAY_CUSTOM_ATTRIBUTE_DEFINITION_ID,
+          bool_filter: true,
+        },
+      ],
+    }),
+    searchCatalogItems({
+      product_types: ['APPOINTMENTS_SERVICE'],
+    }),
+  ])
+
+  return Array.from(
+    [...displayItems, ...appointmentServices]
+      .reduce((itemsById, item) => itemsById.set(item.id, item), new Map<string, CatalogItem>())
+      .values()
+  )
 }
 
 export function transformAvailability(a: Record<string, unknown>) {
