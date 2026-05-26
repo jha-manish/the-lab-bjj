@@ -4,6 +4,8 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Class Schedule | The Jiu-Jitsu Lab Waterloo',
   description: 'BJJ class schedule in Waterloo, ON. Morning, noon, evening, and weekend classes. Gi, No-Gi, Kids, Women\'s, Competition, and Open Mat.',
+  alternates: { canonical: 'https://labjiujitsu.com/schedule' },
+  openGraph: { url: 'https://labjiujitsu.com/schedule' },
 }
 
 const eveningClasses = [

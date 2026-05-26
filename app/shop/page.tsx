@@ -4,6 +4,8 @@ import BookingFlow from '@/components/BookingFlow'
 export const metadata: Metadata = {
   title: 'Shop | The Jiu-Jitsu Lab Waterloo',
   description: 'Book private training, get a membership, or shop academy merch at The Jiu-Jitsu Lab in Waterloo, ON.',
+  alternates: { canonical: 'https://labjiujitsu.com/shop' },
+  openGraph: { url: 'https://labjiujitsu.com/shop' },
 }
 
 export default function ShopPage() {
