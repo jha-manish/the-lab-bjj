@@ -12,7 +12,7 @@ const classes = [
   },
   {
     name: 'Regular Class',
-    desc: 'All-levels class covering technique, drilling, and live rolling. For those with some mat experience.',
+    desc: 'All-levels class covering technique, drilling, and live rolling. Beginners are always welcome — our coaches make sure no one gets left behind.',
     time: 'Mon–Thu · 7:00–8:30 PM',
     level: 'All Levels',
     id: 'AHYKA2XF5A2PBNCSMOCLQMLF',
