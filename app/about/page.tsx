@@ -6,6 +6,8 @@ import InstagramFeed from '@/components/InstagramFeed'
 export const metadata: Metadata = {
   title: 'About | The Jiu-Jitsu Lab Waterloo',
   description: 'Meet the coaching staff at The Jiu-Jitsu Lab in Waterloo, ON. Led by Head Coach Brandon Twaddle, IBJJF No-Gi World Silver Medalist, and a team of world-level competitors.',
+  alternates: { canonical: 'https://labjiujitsu.com/about' },
+  openGraph: { url: 'https://labjiujitsu.com/about' },
 }
 
 const coaches = [

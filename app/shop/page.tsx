@@ -8,6 +8,8 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   title: 'Shop | The Jiu-Jitsu Lab Waterloo',
   description: 'Book private training, get a membership, or shop academy merch at The Jiu-Jitsu Lab in Waterloo, ON.',
+  alternates: { canonical: 'https://labjiujitsu.com/shop' },
+  openGraph: { url: 'https://labjiujitsu.com/shop' },
 }
 
 type ShopCategory = 'privates' | 'memberships' | 'merch'

@@ -5,6 +5,8 @@ import InstagramFeed from '@/components/InstagramFeed'
 export const metadata: Metadata = {
   title: 'The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON',
   description: "Waterloo's dedicated BJJ academy. Est. 1998. Led by IBJJF No-Gi World Silver Medalist Brandon Twaddle and a world-class coaching staff. Gi, No-Gi, Kids, Women's & Competition. First week free.",
+  alternates: { canonical: 'https://labjiujitsu.com' },
+  openGraph: { url: 'https://labjiujitsu.com' },
 }
 
 const programs = [

@@ -8,6 +8,8 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   title: 'Memberships | The Jiu-Jitsu Lab Waterloo',
   description: 'BJJ memberships in Waterloo, ON. Adult unlimited from $135/month. Student and Kids rates available. First week free — no commitment.',
+  alternates: { canonical: 'https://labjiujitsu.com/memberships' },
+  openGraph: { url: 'https://labjiujitsu.com/memberships' },
 }
 
 const commitmentTiers = [
