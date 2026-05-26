@@ -1,21 +1,52 @@
 import type { Metadata } from 'next'
-import BookingFlow from '@/components/BookingFlow'
-import { fetchCatalogItems } from '@/lib/square'
 
-export const runtime = 'edge'
-export const dynamic = 'force-dynamic'
+const SQUARE_BASE = 'https://book.squareup.com/appointments/nh5lp9kyixo0m7/location/LGBKZ7SQXNB33/services'
+
+const classes = [
+  {
+    name: "Beginner's Class",
+    desc: 'Perfect if you\'ve never trained before. Learn the fundamentals in a welcoming, low-pressure environment.',
+    time: 'Mon–Fri · 6:00–7:00 PM',
+    level: 'Beginners',
+    id: 'PTFGD2T4KSOY4ADA224H5X77',
+  },
+  {
+    name: 'Regular Class',
+    desc: 'All-levels class covering technique, drilling, and live rolling. Beginners are always welcome — our coaches make sure no one gets left behind.',
+    time: 'Mon–Thu · 7:00–8:30 PM',
+    level: 'All Levels',
+    tip: "Can't make the 6 PM Beginner's Class? This is your next best option.",
+    id: 'AHYKA2XF5A2PBNCSMOCLQMLF',
+  },
+  {
+    name: "Women's Only Class",
+    desc: 'A dedicated women-only environment. Supportive, focused, and beginner-friendly.',
+    time: 'Fridays · 5:00–6:00 PM',
+    level: 'Women Only',
+    id: 'GJD24AXAVPDC7OX7WXO2UESO',
+  },
+  {
+    name: 'Kids Class',
+    desc: 'Ages 5–15. Fun, structured classes building confidence, discipline, and self-defence. Led by Black Belt Roger Morais.',
+    time: 'Mon–Fri · 5:00–6:00 PM',
+    level: 'Ages 5–15',
+    id: 'RDCFCELC275SBLQLGN2YXUXX',
+  },
+]
+
+const levelColors: Record<string, string> = {
+  'Beginners': 'bg-green-500/20 text-green-400',
+  'All Levels': 'bg-blue-500/20 text-blue-400',
+  'Women Only': 'bg-pink-500/20 text-pink-400',
+  'Ages 5–15': 'bg-purple-500/20 text-purple-400',
+}
 
 export const metadata: Metadata = {
   title: 'Book a Free Trial | The Jiu-Jitsu Lab Waterloo',
   description: 'Book a free drop-in class at The Jiu-Jitsu Lab in Waterloo, ON. All levels welcome. No commitment required.',
 }
 
-export default async function BookPage() {
-  const initialCatalogItems = await fetchCatalogItems().catch((err) => {
-    console.error('Square catalog preload error:', err)
-    return undefined
-  })
-
+export default function BookPage() {
   return (
     <>
       <section className="bg-zinc-950 py-20">
@@ -23,12 +54,12 @@ export default async function BookPage() {
           <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">No commitment required</p>
           <h1 className="text-5xl font-black mb-4">Book Your <span className="text-teal-400">Free Trial</span></h1>
           <p className="text-gray-300 text-lg mb-4 leading-relaxed">
-            The best way to experience The Jiu-Jitsu Lab is to get on the mat. Your first week is completely free — no commitment, no pressure.
+            Your first week is completely free — no credit card, no commitment, no pressure. Pick a class below and you&apos;ll be taken to our secure booking page.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-10 text-sm">
+          <div className="flex flex-col sm:flex-row gap-4 mb-12 text-sm">
             <div className="flex items-center gap-2 text-gray-300">
-              <span className="text-teal-400">✓</span> Coached by IBJJF World Champion Dave Knowles
+              <span className="text-teal-400">✓</span> World-class coaching staff
             </div>
             <div className="flex items-center gap-2 text-gray-300">
               <span className="text-teal-400">✓</span> All levels welcome
@@ -38,8 +69,35 @@ export default async function BookPage() {
             </div>
           </div>
 
-          <div className="bg-zinc-900 border border-white/10 rounded-xl p-8">
-            <BookingFlow initialCatalogItems={initialCatalogItems} initialCategory="dropins" freeTrial />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {classes.map((c) => (
+              <div
+                key={c.id}
+                className="bg-zinc-900 border border-white/10 rounded-xl p-6 flex flex-col gap-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <h2 className="font-black text-lg">{c.name}</h2>
+                  <span className={`text-xs px-2 py-0.5 rounded font-semibold whitespace-nowrap shrink-0 ${levelColors[c.level]}`}>
+                    {c.level}
+                  </span>
+                </div>
+                <p className="text-gray-400 text-sm leading-relaxed flex-1">{c.desc}</p>
+                {'tip' in c && c.tip && (
+                  <p className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-3 py-2 font-semibold">
+                    💡 {c.tip}
+                  </p>
+                )}
+                <p className="text-teal-400 text-xs font-semibold">🕐 {c.time}</p>
+                <a
+                  href={`${SQUARE_BASE}/${c.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 block text-center bg-teal-500 hover:bg-teal-400 text-black font-black text-sm px-4 py-2.5 rounded transition-colors"
+                >
+                  Book Free Trial →
+                </a>
+              </div>
+            ))}
           </div>
         </div>
       </section>
