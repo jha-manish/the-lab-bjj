@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
+import InstagramFeed from '@/components/InstagramFeed'
 
 export const metadata: Metadata = {
   title: 'About | The Jiu-Jitsu Lab Waterloo',
@@ -14,6 +15,7 @@ const coaches = [
     role: 'Head Coach',
     cred: 'IBJJF No-Gi World Silver Medalist',
     bio: 'Brandon leads The Jiu-Jitsu Lab\'s day-to-day operations and is the driving force behind our coaching culture. A silver medalist at the IBJJF No-Gi World Championships, he brings elite competition experience and a deep passion for developing students at every level.',
+    photo: '/images/coaches/brandon_t.webp',
   },
   {
     name: 'Dave Knowles',
@@ -21,6 +23,7 @@ const coaches = [
     role: 'Competition Coach',
     cred: 'IBJJF World Champion',
     bio: 'Dave brings world-championship experience to The Jiu-Jitsu Lab\'s competition program. As a IBJJF World Champion, his knowledge of high-level competition is an invaluable resource for anyone looking to compete.',
+    photo: '/images/coaches/dave_knowles.webp',
   },
   {
     name: 'Roger Morais',
@@ -28,6 +31,7 @@ const coaches = [
     role: 'Kids Coach',
     cred: 'Training since 2011 — 15+ years experience',
     bio: 'Roger heads our Kids BJJ program and has spent over 15 years on the mats. His patient, structured approach makes him ideal for developing young athletes. He instills discipline, confidence, and a love for the art in every student.',
+    photo: '/images/coaches/roger_morais.webp',
   },
   {
     name: 'Stephen DesChamp',
@@ -35,6 +39,7 @@ const coaches = [
     role: 'Morning Classes Instructor',
     cred: 'IBJJF World Competitor',
     bio: 'Stephen runs our early morning classes and has competed at the IBJJF World Championships. His technical game and commitment to the fundamentals make him an outstanding instructor for students who want to build a strong foundation.',
+    photo: null,
   },
 ]
 
@@ -44,10 +49,10 @@ export default function AboutPage() {
       <section className="bg-zinc-950 py-20 relative overflow-hidden">
         <div className="absolute inset-x-0 top-0 h-[520px] overflow-hidden">
           <div
-            className="absolute inset-y-0 right-0 w-full lg:w-[58%] scale-110 bg-cover bg-[center_70%] opacity-50"
+            className="absolute inset-y-0 right-0 w-full lg:w-[58%] bg-cover bg-[center_70%] opacity-20 lg:opacity-50"
             style={{ backgroundImage: "url('/images/hero/hero-group.jpg')" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/90 to-zinc-950/45" />
+          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/90 to-zinc-950/80 lg:to-zinc-950/45" />
           <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/20 via-transparent to-zinc-950" />
         </div>
 
@@ -159,8 +164,11 @@ export default function AboutPage() {
             {coaches.map(c => (
               <div key={c.name} className="bg-zinc-900 border border-white/10 rounded-xl p-8 hover:border-teal-500/40 transition-colors">
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-full bg-teal-500/20 flex items-center justify-center shrink-0">
-                    <span className="text-teal-400 font-black text-2xl">{c.name[0]}</span>
+                  <div className="w-14 h-14 rounded-full bg-teal-500/20 flex items-center justify-center shrink-0 overflow-hidden">
+                    {c.photo
+                      ? <Image src={c.photo} alt={c.name} width={56} height={56} className="object-cover w-full h-full" />
+                      : <span className="text-teal-400 font-black text-2xl">{c.name[0]}</span>
+                    }
                   </div>
                   <div>
                     <p className="text-xl font-black">{c.name}</p>
@@ -188,7 +196,7 @@ export default function AboutPage() {
               alt="The Jiu-Jitsu Lab — class group photo"
               fill
               sizes="(max-width: 768px) 100vw, 1152px"
-              className="object-cover object-top"
+              className="object-cover object-center"
             />
           </div>
 
@@ -233,6 +241,8 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      <InstagramFeed />
 
       <section className="bg-zinc-900 py-16">
         <div className="max-w-6xl mx-auto px-4 text-center">
