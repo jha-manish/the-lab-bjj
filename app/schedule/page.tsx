@@ -82,12 +82,6 @@ export default function SchedulePage() {
               </div>
             ))}
           </div>
-
-          <div className="mt-12 flex flex-wrap gap-4 text-sm">
-            {Object.entries(levelColors).map(([label, cls]) => (
-              <span key={label} className={`px-3 py-1 rounded font-semibold ${cls}`}>{label}</span>
-            ))}
-          </div>
         </div>
       </section>
 
