@@ -146,7 +146,13 @@ export default function BookingFlow({ initialCategory, allowedCategories, freeTr
     })
     fetch(`/api/square/availability?${params}`)
       .then((r) => r.json())
-      .then((data) => setSlots(data.availabilities ?? []))
+      .then((data) => {
+        const now = new Date()
+        const future = (data.availabilities ?? []).filter(
+          (s: TimeSlot) => new Date(s.startAt) > now
+        )
+        setSlots(future)
+      })
       .catch(() => setError('Failed to load times'))
       .finally(() => setLoadingSlots(false))
   }, [selectedVariation, selectedDate, bookable])
