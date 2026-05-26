@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 import InstagramFeed from '@/components/InstagramFeed'
 
@@ -17,11 +18,11 @@ const programs = [
 ]
 
 const coaches = [
-  { name: 'Dragan Konjevic', rank: 'Black Belt', cred: 'Founder · Alliance BB promoted by Romero "Jacaré" Cavalcanti', founder: true },
-  { name: 'Brandon Twaddle', rank: 'Brown Belt', cred: 'Head Coach · IBJJF No-Gi World Silver Medalist', founder: false },
-  { name: 'Dave Knowles', rank: 'Black Belt', cred: 'IBJJF World Champion', founder: false },
-  { name: 'Roger Morais', rank: 'Black Belt', cred: '15+ years experience · Kids Coach', founder: false },
-  { name: 'Stephen DesChamp', rank: 'Brown Belt', cred: 'IBJJF World Competitor · Morning Classes', founder: false },
+  { name: 'Dragan Konjevic', rank: 'Black Belt', cred: 'Founder · Alliance BB promoted by Romero "Jacaré" Cavalcanti', founder: true, photo: '/images/coaches/dragan_konjevice.png' },
+  { name: 'Brandon Twaddle', rank: 'Brown Belt', cred: 'Head Coach · IBJJF No-Gi World Silver Medalist', founder: false, photo: '/images/coaches/brandon_t.webp' },
+  { name: 'Dave Knowles', rank: 'Black Belt', cred: 'IBJJF World Champion', founder: false, photo: '/images/coaches/dave_knowles.webp' },
+  { name: 'Roger Morais', rank: 'Black Belt', cred: '15+ years experience · Kids Coach', founder: false, photo: '/images/coaches/roger_morais.webp' },
+  { name: 'Stephen DesChamp', rank: 'Brown Belt', cred: 'IBJJF World Competitor · Morning Classes', founder: false, photo: null },
 ]
 
 export default function Home() {
@@ -174,8 +175,11 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {coaches.map(c => (
               <div key={c.name} className={`bg-zinc-950 border rounded-xl p-6 ${c.founder ? 'border-teal-500/40' : 'border-white/10'}`}>
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${c.founder ? 'bg-teal-500/30' : 'bg-teal-500/20'}`}>
-                  <span className="text-teal-400 font-black text-lg">{c.name[0]}</span>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 overflow-hidden ${c.founder ? 'bg-teal-500/30' : 'bg-teal-500/20'}`}>
+                  {c.photo
+                    ? <Image src={c.photo} alt={c.name} width={48} height={48} className="object-cover w-full h-full" />
+                    : <span className="text-teal-400 font-black text-lg">{c.name[0]}</span>
+                  }
                 </div>
                 <p className="font-bold text-white">{c.name}</p>
                 <p className="text-teal-400 text-sm font-semibold">{c.rank}</p>

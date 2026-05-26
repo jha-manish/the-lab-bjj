@@ -12,6 +12,14 @@ export const metadata: Metadata = {
 
 const coaches = [
   {
+    name: 'Dragan Konjevic',
+    rank: 'Black Belt',
+    role: 'Founder',
+    cred: 'Alliance BB promoted by Romero "Jacaré" Cavalcanti',
+    bio: 'Dragan brought Brazilian Jiu-Jitsu to the Kitchener-Waterloo region in 1998 — earning the first black belt in the area and building a BJJ community from the ground up. An Alliance black belt promoted by the legendary Romero "Jacaré" Cavalcanti, his lineage and legacy run through every coach and student at The Lab. He still comes in to teach semi-regularly.',
+    photo: '/images/coaches/dragan_konjevice.png',
+  },
+  {
     name: 'Brandon Twaddle',
     rank: 'Brown Belt',
     role: 'Head Coach',
