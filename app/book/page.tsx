@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-const SQUARE_AVAILABILITY = 'https://book.squareup.com/appointments/nh5lp9kyixo0m7/location/LGBKZ7SQXNB33/availability'
+const SQUARE_BASE = 'https://book.squareup.com/appointments/nh5lp9kyixo0m7/location/LGBKZ7SQXNB33/services'
 
 const classes = [
   {
@@ -89,7 +89,7 @@ export default function BookPage() {
                 )}
                 <p className="text-teal-400 text-xs font-semibold">🕐 {c.time}</p>
                 <a
-                  href={`${SQUARE_AVAILABILITY}?serviceId=${c.id}`}
+                  href={`${SQUARE_BASE}/${c.id}/availability`}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-1 block text-center bg-teal-500 hover:bg-teal-400 text-black font-black text-sm px-4 py-2.5 rounded transition-colors"
