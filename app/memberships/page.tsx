@@ -13,9 +13,9 @@ const memberships = [
     highlight: true,
     who: 'Adults of all levels — beginners to competitors',
     includes: [
-      'All weeknight classes (Mon–Thu)',
-      'Beginners class every evening',
-      'Regular all-levels class every evening',
+      'All weeknight classes (Mon–Fri)',
+      'Beginners class every weeknight (Mon–Fri)',
+      'Regular all-levels class every weeknight (Mon–Thu)',
       "Women's Only class (Fridays)",
       'Q&A / Drilling (Fridays)',
       'Open Mat (Fridays — free)',
