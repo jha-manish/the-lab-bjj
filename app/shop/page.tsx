@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import BookingFlow from '@/components/BookingFlow'
 import { fetchCatalogItems } from '@/lib/square'
 
+export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
