@@ -70,8 +70,8 @@ const extras = [
     title: 'Private Lessons',
     price: 'By quote',
     desc: 'One-on-one with any of our world-level coaches. Fastest way to improve — perfect for beginners wanting a head start or competitors fixing specific weaknesses.',
-    cta: 'Contact Us',
-    href: 'mailto:support@labjiujitsu.com',
+    cta: 'Find a Coach',
+    href: '/shop?category=privates',
   },
 ]
 
