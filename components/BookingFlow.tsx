@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -68,6 +69,18 @@ const CATEGORY_META: Record<Category, { label: string; description: string; book
   memberships: { label: 'Memberships', description: 'Monthly or annual plans for unlimited training', bookable: false },
   merch: { label: 'Merch', description: 'Gear, rashguards, and academy apparel', bookable: false },
 }
+
+const privateTrainers = [
+  {
+    name: 'Brandon Twaddle',
+    rank: 'Brown Belt',
+    cred: 'Head Coach · IBJJF No-Gi World Silver Medalist',
+    description:
+      'Brandon leads The Jiu-Jitsu Lab\'s day-to-day operations and coaching culture. A silver medalist at the IBJJF No-Gi World Championships, he brings elite competition experience and a deep passion for developing students at every level.',
+    photo: '/images/coaches/brandon_t.webp',
+    phone: '(226) 606-7781',
+  },
+]
 
 function formatPrice(amount: string | undefined, currency: string | undefined) {
   if (!amount) return 'Contact us'
@@ -225,6 +238,11 @@ export default function BookingFlow({
   // Load catalog when category chosen
   useEffect(() => {
     if (!category) return
+
+    if (category === 'privates') {
+      setItems([])
+      return
+    }
 
     if (initialCatalogItems) {
       setItems(filterItemsForCategory(initialCatalogItems, category))
@@ -441,6 +459,56 @@ export default function BookingFlow({
 
   // ── Step: Service ───────────────────────────────────────────────────────────
   if (step === 'service') {
+    if (category === 'privates') {
+      return (
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center gap-3">
+            {!initialCategory && (
+              <button onClick={() => { setStep('category'); setCategory(null); setItems([]) }} className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-white/10 px-3 py-1.5 rounded-lg transition-colors">← Back</button>
+            )}
+            <h2 className="text-2xl font-black">Private Training</h2>
+          </div>
+
+          <p className="text-gray-400 leading-relaxed">
+            Work one-on-one with a coach for focused technical development, competition preparation, or personalized troubleshooting.
+            Contact a trainer directly to coordinate availability.
+          </p>
+
+          <div className="grid grid-cols-1 gap-4">
+            {privateTrainers.map((trainer) => (
+              <div key={trainer.name} className="bg-zinc-900 border border-white/10 rounded-xl overflow-hidden sm:flex">
+                <div className="relative h-72 sm:h-auto sm:w-56 shrink-0 bg-zinc-800">
+                  <Image
+                    src={trainer.photo}
+                    alt={trainer.name}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 224px"
+                    className="object-cover object-center"
+                  />
+                </div>
+                <div className="p-6 flex flex-col gap-4">
+                  <div>
+                    <h3 className="text-2xl font-black">{trainer.name}</h3>
+                    <p className="text-teal-400 font-semibold text-sm">{trainer.rank} · {trainer.cred}</p>
+                  </div>
+                  <p className="text-gray-400 leading-relaxed">{trainer.description}</p>
+                  <div className="mt-auto rounded-lg border border-white/10 bg-zinc-800 p-4">
+                    <p className="text-sm font-semibold uppercase tracking-widest mb-3">Contact Info</p>
+                    <a href={`tel:${trainer.phone.replace(/\D/g, '')}`} className="text-xs text-teal-400 hover:text-teal-300 font-black transition-colors sm:hidden">
+                      Phone: {trainer.phone}
+                    </a>
+                    <p className="hidden text-xs text-gray-400 font-black transition-colors sm:block">
+                      Phone: {trainer.phone}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="flex flex-col gap-6">
         {(!initialCategory || !freeTrial) && (
