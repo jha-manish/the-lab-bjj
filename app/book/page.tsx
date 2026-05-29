@@ -17,7 +17,7 @@ export default function BookPage() {
           <h1 className="text-5xl font-black mb-4">Book Your <span className="text-teal-400">Free Trial</span></h1>
           <p className="text-gray-300 text-lg mb-4 leading-relaxed">
             Your first week is completely free — no credit card, no commitment, no pressure.
-            Pick a class below to get started.
+            Pick a class to get started.
           </p>
 
           <div className="flex flex-wrap gap-4 mb-10 text-sm">

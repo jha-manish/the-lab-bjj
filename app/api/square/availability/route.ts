@@ -13,10 +13,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required params' }, { status: 400 })
   }
 
-  const startAt = new Date(startDate)
-  startAt.setHours(0, 0, 0, 0)
-  const endAt = new Date(startDate)
-  endAt.setHours(23, 59, 59, 999)
+  // Compute the UTC range for [startDate] in Eastern Time (America/Toronto).
+  // e.g. "2026-06-02" EDT → 2026-06-02T04:00:00Z … 2026-06-03T03:59:59.999Z
+  const etOffset = (() => {
+    const sample = new Date(`${startDate}T12:00:00Z`)
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Toronto',
+      timeZoneName: 'shortOffset',
+      hour: 'numeric',
+    }).formatToParts(sample)
+    const str = parts.find(p => p.type === 'timeZoneName')?.value ?? 'GMT-4'
+    return parseInt(str.replace('GMT', '') || '-4', 10) // e.g. -4 for EDT
+  })()
+  const absOffset = Math.abs(etOffset)
+  const startAt = new Date(`${startDate}T${String(absOffset).padStart(2, '0')}:00:00.000Z`)
+  const endAt   = new Date(startAt.valueOf() + 24 * 3600_000 - 1)
 
   try {
     const res = await squareFetch('/bookings/availability/search', {
