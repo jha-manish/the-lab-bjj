@@ -57,3 +57,12 @@ curl -X POST http://localhost:3000/api/dev/clear-square-cache
 ```
 
 The cache-clear endpoint returns `404` in production.
+
+## Availability Cache
+
+`fetchAvailability()` uses the same backend in-memory pattern for Square booking availability.
+
+- Cache TTL: 6 hours.
+- In-flight Square requests are shared so preloading and manual date selection do not stampede Square.
+- `/book` preloads the next 3 weeks of availability for all free trial classes after the page loads.
+- The cache is per server runtime/instance, so a cold runtime still needs to ask Square once for each class/date pair.
