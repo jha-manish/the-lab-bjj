@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { clearCatalogItemsCache } from '@/lib/square'
+import { clearAvailabilityCache, clearCatalogItemsCache } from '@/lib/square'
 
 export const runtime = 'edge'
 
@@ -9,6 +9,7 @@ export async function POST() {
   }
 
   clearCatalogItemsCache()
+  clearAvailabilityCache()
 
   return NextResponse.json({ ok: true })
 }

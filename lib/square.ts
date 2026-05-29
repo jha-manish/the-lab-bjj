@@ -31,10 +31,12 @@ export interface WebsiteCustomAttributes {
 }
 
 type CatalogItem = ReturnType<typeof transformItem>
+export type AvailabilitySlot = ReturnType<typeof transformAvailability>
 
 const WEBSITE_DISPLAY_CUSTOM_ATTRIBUTE_DEFINITION_ID = '6HHNPNJ4LVXOSD5SI4FKPGTM'
 const WEBSITE_MERCH_CUSTOM_ATTRIBUTE_DEFINITION_ID = 'FDEKYIIVAIBTD23ZKIZOYUBN'
 const CATALOG_CACHE_TTL_MS = 5 * 60 * 1000
+const AVAILABILITY_CACHE_TTL_MS = 6 * 60 * 60 * 1000
 
 interface CatalogCache {
   expiresAt: number
@@ -42,8 +44,15 @@ interface CatalogCache {
   promise?: Promise<CatalogItem[]>
 }
 
+interface AvailabilityCacheEntry {
+  expiresAt: number
+  slots?: AvailabilitySlot[]
+  promise?: Promise<AvailabilitySlot[]>
+}
+
 const globalCatalogCache = globalThis as typeof globalThis & {
   __theLabCatalogCacheV4?: CatalogCache
+  __theLabAvailabilityCacheV1?: Record<string, AvailabilityCacheEntry>
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -266,6 +275,63 @@ export function clearCatalogItemsCache() {
   globalCatalogCache.__theLabCatalogCacheV4 = undefined
 }
 
+function availabilityCacheKey(serviceVariationId: string, startDate: string) {
+  return `${serviceVariationId}:${startDate}`
+}
+
+export function getUtcRangeForEasternDate(startDate: string) {
+  const sample = new Date(`${startDate}T12:00:00Z`)
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Toronto',
+    timeZoneName: 'shortOffset',
+    hour: 'numeric',
+  }).formatToParts(sample)
+  const str = parts.find(p => p.type === 'timeZoneName')?.value ?? 'GMT-4'
+  const etOffset = parseInt(str.replace('GMT', '') || '-4', 10)
+  const absOffset = Math.abs(etOffset)
+  const startAt = new Date(`${startDate}T${String(absOffset).padStart(2, '0')}:00:00.000Z`)
+  const endAt = new Date(startAt.valueOf() + 24 * 3600_000 - 1)
+
+  return { startAt, endAt }
+}
+
+export async function fetchAvailability(serviceVariationId: string, startDate: string) {
+  const now = Date.now()
+  const key = availabilityCacheKey(serviceVariationId, startDate)
+  const cache = globalCatalogCache.__theLabAvailabilityCacheV1 ??= {}
+  const cached = cache[key]
+
+  if (cached?.slots && cached.expiresAt > now) {
+    return cached.slots
+  }
+
+  if (cached?.promise && cached.expiresAt > now) {
+    return cached.promise
+  }
+
+  const promise = fetchFreshAvailability(serviceVariationId, startDate)
+  cache[key] = {
+    expiresAt: now + AVAILABILITY_CACHE_TTL_MS,
+    promise,
+  }
+
+  try {
+    const slots = await promise
+    cache[key] = {
+      expiresAt: Date.now() + AVAILABILITY_CACHE_TTL_MS,
+      slots,
+    }
+    return slots
+  } catch (err) {
+    delete cache[key]
+    throw err
+  }
+}
+
+export function clearAvailabilityCache() {
+  globalCatalogCache.__theLabAvailabilityCacheV1 = undefined
+}
+
 async function searchCatalogItems(body: Record<string, unknown>) {
   const items: CatalogItem[] = []
   let cursor: string | undefined
@@ -319,6 +385,30 @@ async function fetchFreshCatalogItems() {
       .reduce((itemsById, item) => itemsById.set(item.id, item), new Map<string, CatalogItem>())
       .values()
   )
+}
+
+async function fetchFreshAvailability(serviceVariationId: string, startDate: string) {
+  const { startAt, endAt } = getUtcRangeForEasternDate(startDate)
+  const res = await squareFetch('/bookings/availability/search', {
+    method: 'POST',
+    body: JSON.stringify({
+      query: {
+        filter: {
+          start_at_range: {
+            start_at: startAt.toISOString(),
+            end_at: endAt.toISOString(),
+          },
+          location_id: LOCATION_ID,
+          segment_filters: [{ service_variation_id: serviceVariationId }],
+        },
+      },
+    }),
+  })
+
+  if (!res.ok) throw new Error(`Square availability ${res.status}: ${await res.text()}`)
+
+  const data = (await res.json()) as { availabilities?: Record<string, unknown>[] }
+  return (data.availabilities ?? []).map(transformAvailability)
 }
 
 export function transformAvailability(a: Record<string, unknown>) {

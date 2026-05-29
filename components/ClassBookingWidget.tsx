@@ -1,47 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-
-// ── Class definitions with Square variation IDs ────────────────────────────
-const CLASSES = [
-  {
-    name: "Beginner's Class",
-    desc: "Perfect if you've never trained before. Learn the fundamentals in a welcoming, low-pressure environment.",
-    time: 'Mon–Fri · 6:00–7:00 PM',
-    level: 'Beginners',
-    itemId: 'PTFGD2T4KSOY4ADA224H5X77',
-    variationId: 'SO5MYYKR524ICGNGG4NKEEAZ',
-    variationVersion: '1778476320636',
-  },
-  {
-    name: 'Regular Class',
-    desc: 'All-levels class covering technique, drilling, and live rolling. Beginners are always welcome — our coaches make sure no one gets left behind.',
-    time: 'Mon–Thu · 7:00–8:30 PM',
-    level: 'All Levels',
-    tip: "Can't make the 6 PM Beginner's Class? This is your next best option.",
-    itemId: 'AHYKA2XF5A2PBNCSMOCLQMLF',
-    variationId: '2JICFMUU6IBBOMFR7IF7ZIXQ',
-    variationVersion: '1779766840759',
-  },
-  {
-    name: "Women's Only Class",
-    desc: 'A dedicated women-only environment. Supportive, focused, and beginner-friendly.',
-    time: 'Fridays · 5:00–6:00 PM',
-    level: 'Women Only',
-    itemId: 'GJD24AXAVPDC7OX7WXO2UESO',
-    variationId: 'BL2SYBITVHONRW6S4Q46556V',
-    variationVersion: '1778476901859',
-  },
-  {
-    name: 'Kids Class',
-    desc: 'Ages 5–15. Fun, structured classes building confidence, discipline, and self-defence. Led by Black Belt Roger Morais.',
-    time: 'Mon–Fri · 5:00–6:00 PM',
-    level: 'Ages 5–15',
-    itemId: 'RDCFCELC275SBLQLGN2YXUXX',
-    variationId: 'UXGTIMUXQ5HW5VWWE5LJZAQ7',
-    variationVersion: '1778476481420',
-  },
-]
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { TRIAL_CLASSES, type TrialClass } from '@/lib/trial-classes'
 
 const LEVEL_COLORS: Record<string, string> = {
   'Beginners':  'bg-green-500/20 text-green-400 border-green-500/30',
@@ -75,6 +35,10 @@ function isoDate(d: Date): string {
   return d.toISOString().slice(0, 10)
 }
 
+function availabilityKey(serviceVariationId: string, startDate: string) {
+  return `${serviceVariationId}:${startDate}`
+}
+
 function nextNDates(n: number): Date[] {
   const dates: Date[] = []
   const now = new Date()
@@ -94,24 +58,24 @@ function labelDate(d: Date) {
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────
-type ClassDef = (typeof CLASSES)[number]
-
 interface Slot {
   startAt: string
   appointmentSegments: { teamMemberId?: string; serviceVariationId?: string; serviceVariationVersion?: string }[]
 }
 
+type AvailabilityByKey = Record<string, Slot[]>
 type Step = 'class' | 'date' | 'time' | 'details' | 'confirm'
 
 // ── Main component ─────────────────────────────────────────────────────────
 export default function ClassBookingWidget() {
   const [step, setStep] = useState<Step>('class')
-  const [selectedClass, setSelectedClass] = useState<ClassDef | null>(null)
+  const [selectedClass, setSelectedClass] = useState<TrialClass | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [slots, setSlots] = useState<Slot[]>([])
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [slotsError, setSlotsError] = useState<string | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
+  const [availabilityByKey, setAvailabilityByKey] = useState<AvailabilityByKey>({})
   const [form, setForm] = useState({ name: '', email: '', phone: '' })
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -119,7 +83,24 @@ export default function ClassBookingWidget() {
 
   const stepRef = useRef<HTMLDivElement>(null)
 
-  const dates = nextNDates(14)
+  const dates = useMemo(() => nextNDates(21), [])
+  const dateKeys = useMemo(() => dates.map(isoDate), [dates])
+
+  // Warm every class/date pair so later steps can read from browser memory.
+  useEffect(() => {
+    const params = new URLSearchParams()
+    dateKeys.forEach((date) => params.append('startDate', date))
+
+    fetch(`/api/square/availability/bulk?${params}`)
+      .then(r => r.json())
+      .then((data: { availability?: AvailabilityByKey }) => {
+        if (!data.availability) return
+        setAvailabilityByKey(current => ({ ...current, ...data.availability }))
+      })
+      .catch(() => {
+        // The per-date fetch below still works if the warmup request fails.
+      })
+  }, [dateKeys])
 
   // Fetch slots when date is selected
   useEffect(() => {
@@ -129,29 +110,48 @@ export default function ClassBookingWidget() {
     setSlots([])
     setSelectedSlot(null)
 
+    const dateKey = isoDate(selectedDate)
+    const key = availabilityKey(selectedClass.variationId, dateKey)
+    const cachedSlots = availabilityByKey[key]
+    const now = new Date()
+
+    if (cachedSlots) {
+      setSlots(cachedSlots.filter(s => new Date(s.startAt) > now))
+      setSlotsLoading(false)
+      return
+    }
+
     const params = new URLSearchParams({
       serviceVariationId: selectedClass.variationId,
       serviceVariationVersion: selectedClass.variationVersion,
-      startDate: isoDate(selectedDate),
+      startDate: dateKey,
     })
 
-    fetch(`/api/square/availability?${params}`)
+    const controller = new AbortController()
+
+    fetch(`/api/square/availability?${params}`, { signal: controller.signal })
       .then(r => r.json())
       .then((data: { availabilities?: Slot[]; error?: string }) => {
         if (data.error) throw new Error(data.error)
-        const now = new Date()
-        const future = (data.availabilities ?? []).filter(s => new Date(s.startAt) > now)
+        const availabilities = data.availabilities ?? []
+        const future = availabilities.filter(s => new Date(s.startAt) > now)
+        setAvailabilityByKey(current => ({ ...current, [key]: availabilities }))
         setSlots(future)
       })
-      .catch(e => setSlotsError(e.message ?? 'Failed to load times'))
+      .catch(e => {
+        if (e instanceof DOMException && e.name === 'AbortError') return
+        setSlotsError(e.message ?? 'Failed to load times')
+      })
       .finally(() => setSlotsLoading(false))
-  }, [selectedClass, selectedDate])
+
+    return () => controller.abort()
+  }, [selectedClass, selectedDate, availabilityByKey])
 
   function scrollToStep() {
     setTimeout(() => stepRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 
-  function selectClass(cls: ClassDef) {
+  function selectClass(cls: TrialClass) {
     setSelectedClass(cls)
     setSelectedDate(null)
     setSlots([])
@@ -238,7 +238,7 @@ export default function ClassBookingWidget() {
         {/* ── Step 1: Select Class ───────────────────────────────────── */}
         {step === 'class' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {CLASSES.map(cls => (
+            {TRIAL_CLASSES.map(cls => (
               <button
                 key={cls.itemId}
                 onClick={() => selectClass(cls)}
@@ -277,7 +277,7 @@ export default function ClassBookingWidget() {
                 <p className="font-black text-white">{selectedClass.name}</p>
               </div>
             </div>
-            <p className="text-gray-400 text-sm mb-4">Pick a date — next 2 weeks:</p>
+            <p className="text-gray-400 text-sm mb-4">Pick a date — next 3 weeks:</p>
             <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
               {dates.map(d => {
                 const { weekday, day, month } = labelDate(d)
