@@ -278,7 +278,7 @@ export default function ClassBookingWidget() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2">
+            <div className="grid grid-cols-1 lg:grid-cols-7 gap-2">
               {dates.map(d => {
                 const { weekday, day, month } = labelDate(d)
                 const key = availabilityKey(selectedClass.variationId, isoDate(d))
@@ -290,24 +290,24 @@ export default function ClassBookingWidget() {
                 return (
                   <div
                     key={isoDate(d)}
-                    className={`rounded-xl border p-3 min-h-32 transition-colors ${
+                    className={`rounded-xl border transition-colors ${
                       hasSlots
-                        ? 'bg-zinc-900 border-white/10'
-                        : 'bg-zinc-900/40 border-white/5 opacity-60'
+                        ? 'bg-zinc-900 border-white/10 p-2.5 lg:p-3 min-h-24 lg:min-h-32'
+                        : 'bg-zinc-900/40 border-white/5 opacity-60 p-2 lg:p-3 min-h-12 lg:min-h-32'
                     }`}
                   >
-                    <div className="flex sm:flex-col sm:items-center items-baseline gap-1 sm:gap-0 mb-3">
+                    <div className="flex lg:flex-col lg:items-center items-baseline gap-1 lg:gap-0 mb-2 lg:mb-3">
                       <span className={`text-xs font-semibold ${hasSlots ? 'text-teal-400' : 'text-gray-500'}`}>{weekday}</span>
-                      <span className="text-white font-black text-lg leading-tight">{day}</span>
-                      <span className="text-gray-600 text-xs">{month}</span>
+                      <span className="text-xs lg:text-lg text-gray-300 lg:text-white font-semibold lg:font-black leading-tight">{day}</span>
+                      <span className="text-gray-500 lg:text-gray-600 text-xs">{month}</span>
                     </div>
 
                     {isLoading && (
-                      <p className="text-gray-500 text-xs text-center py-4">Loading…</p>
+                      <p className="text-gray-500 text-xs text-center py-2 lg:py-4">Loading…</p>
                     )}
 
                     {!isLoading && !hasSlots && (
-                      <p className="text-gray-600 text-xs text-center py-4">No class</p>
+                      <p className="text-gray-600 text-xs text-center py-1 lg:py-4">No class</p>
                     )}
 
                     {!isLoading && hasSlots && (
