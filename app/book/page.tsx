@@ -107,6 +107,36 @@ export default function BookPage() {
         </div>
       </section>
 
+      {/* Embedded Square Booking */}
+      <section className="bg-zinc-900 py-20">
+        <div className="max-w-4xl mx-auto px-4">
+          <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-3">Or Book Right Here</p>
+          <h2 className="text-3xl font-black mb-2">Book Without <span className="text-teal-400">Leaving the Page</span></h2>
+          <p className="text-gray-400 mb-8">Select your class and pick a time — all from right here.</p>
+          <div className="rounded-xl overflow-hidden border border-white/10">
+            <iframe
+              src="https://book.squareup.com/appointments/nh5lp9kyixo0m7/location/LGBKZ7SQXNB33/services"
+              width="100%"
+              height="800"
+              frameBorder="0"
+              title="Book a class at The Jiu-Jitsu Lab"
+              allow="payment"
+            />
+          </div>
+          <p className="text-center mt-4 text-sm text-gray-500">
+            Having trouble?{' '}
+            <a
+              href="https://book.squareup.com/appointments/nh5lp9kyixo0m7/location/LGBKZ7SQXNB33/services"
+              target="_blank"
+              rel="noreferrer"
+              className="text-teal-400 hover:text-teal-300 transition-colors"
+            >
+              Open booking page in a new tab →
+            </a>
+          </p>
+        </div>
+      </section>
+
       <section className="bg-zinc-900 py-20">
         <div className="max-w-3xl mx-auto px-4">
           <h2 className="text-3xl font-black mb-10">What to Expect on <span className="text-teal-400">Your First Day</span></h2>
