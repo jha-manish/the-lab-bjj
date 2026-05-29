@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useRef } from 'react'
+import type { KeyboardEvent } from 'react'
 import { TRIAL_CLASSES, type TrialClass } from '@/lib/trial-classes'
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -62,6 +63,17 @@ function labelDate(d: Date) {
   return { weekday, day, month }
 }
 
+function formatPhoneInput(value: string) {
+  const digits = value.replace(/\D/g, '').replace(/^1(?=\d{10})/, '').slice(0, 10)
+  const areaCode = digits.slice(0, 3)
+  const prefix = digits.slice(3, 6)
+  const lineNumber = digits.slice(6, 10)
+
+  if (digits.length <= 3) return areaCode ? `(${areaCode}` : ''
+  if (digits.length <= 6) return `(${areaCode}) ${prefix}`
+  return `(${areaCode}) ${prefix}-${lineNumber}`
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────
 interface Slot {
   startAt: string
@@ -86,6 +98,10 @@ export default function ClassBookingWidget() {
   const [confirmedBooking, setConfirmedBooking] = useState<{ id: string; startAt: string } | null>(null)
 
   const stepRef = useRef<HTMLDivElement>(null)
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const emailInputRef = useRef<HTMLInputElement>(null)
+  const phoneInputRef = useRef<HTMLInputElement>(null)
+  const confirmButtonRef = useRef<HTMLButtonElement>(null)
 
   const dates = useMemo(() => nextNDates(DAYS_PER_WEEK, weekOffset * DAYS_PER_WEEK), [weekOffset])
   const preloadDates = useMemo(() => nextNDates(DAYS_PER_WEEK * PRELOAD_WEEKS, weekOffset * DAYS_PER_WEEK), [weekOffset])
@@ -147,8 +163,50 @@ export default function ClassBookingWidget() {
     scrollToStep()
   }
 
+  function handleDetailsFieldKeyDown(event: KeyboardEvent<HTMLInputElement>, nextControl: HTMLInputElement | HTMLButtonElement | null) {
+    if (event.key !== 'Enter') return
+
+    event.preventDefault()
+    nextControl?.focus()
+  }
+
+  function handleFinalDetailsFieldKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'Enter') return
+
+    event.preventDefault()
+    void submitBooking()
+  }
+
+  function handleDetailsKeyboardLoop(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== 'Tab') return
+
+    const controls = [
+      nameInputRef.current,
+      emailInputRef.current,
+      phoneInputRef.current,
+      confirmButtonRef.current,
+    ].filter((control): control is HTMLInputElement | HTMLButtonElement => Boolean(control && !control.disabled))
+
+    if (controls.length === 0) return
+
+    const firstControl = controls[0]
+    const lastControl = controls[controls.length - 1]
+    const activeElement = document.activeElement
+
+    if (!event.shiftKey && activeElement === lastControl) {
+      event.preventDefault()
+      firstControl.focus()
+    }
+
+    if (event.shiftKey && activeElement === firstControl) {
+      event.preventDefault()
+      lastControl.focus()
+    }
+  }
+
   async function submitBooking() {
     if (!selectedClass || !selectedSlot) return
+    if (!form.name || !form.email || !form.phone || submitting) return
     setSubmitting(true)
     setSubmitError(null)
     const seg = selectedSlot.appointmentSegments[0]
@@ -345,34 +403,44 @@ export default function ClassBookingWidget() {
               </div>
             </div>
 
-            <div className="bg-zinc-900 border border-white/10 rounded-xl p-6 flex flex-col gap-4">
+            <div onKeyDown={handleDetailsKeyboardLoop} className="bg-zinc-900 border border-white/10 rounded-xl p-6 flex flex-col gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-300 mb-1.5">Full name</label>
                 <input
+                  ref={nameInputRef}
                   type="text"
+                  autoCapitalize="words"
                   placeholder="Jane Smith"
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  onKeyDown={e => handleDetailsFieldKeyDown(e, emailInputRef.current)}
                   className="w-full bg-zinc-950 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-teal-500 transition-colors"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-300 mb-1.5">Email</label>
                 <input
+                  ref={emailInputRef}
                   type="email"
+                  autoCapitalize="none"
                   placeholder="jane@example.com"
                   value={form.email}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  onKeyDown={e => handleDetailsFieldKeyDown(e, phoneInputRef.current)}
                   className="w-full bg-zinc-950 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-teal-500 transition-colors"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-300 mb-1.5">Phone</label>
                 <input
+                  ref={phoneInputRef}
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   placeholder="(226) 555-0100"
                   value={form.phone}
-                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                  onChange={e => setForm(f => ({ ...f, phone: formatPhoneInput(e.target.value) }))}
+                  onKeyDown={handleFinalDetailsFieldKeyDown}
                   className="w-full bg-zinc-950 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-teal-500 transition-colors"
                 />
               </div>
@@ -382,6 +450,7 @@ export default function ClassBookingWidget() {
               )}
 
               <button
+                ref={confirmButtonRef}
                 onClick={submitBooking}
                 disabled={submitting || !form.name || !form.email || !form.phone}
                 className="mt-2 bg-teal-500 hover:bg-teal-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black px-6 py-3 rounded-lg text-base transition-colors"
