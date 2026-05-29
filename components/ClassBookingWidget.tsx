@@ -269,7 +269,7 @@ export default function ClassBookingWidget() {
         {step === 'date' && selectedClass && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <button onClick={() => setStep('class')} className="text-gray-500 hover:text-white text-sm transition-colors">
+              <button onClick={() => setStep('class')} className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 bg-zinc-800 hover:bg-zinc-700 border border-white/10 hover:border-white/20 px-3 py-1.5 rounded-lg transition-colors">
                 ← Back
               </button>
               <div>
@@ -301,7 +301,7 @@ export default function ClassBookingWidget() {
         {step === 'time' && selectedClass && selectedDate && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <button onClick={() => setStep('date')} className="text-gray-500 hover:text-white text-sm transition-colors">
+              <button onClick={() => setStep('date')} className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 bg-zinc-800 hover:bg-zinc-700 border border-white/10 hover:border-white/20 px-3 py-1.5 rounded-lg transition-colors">
                 ← Back
               </button>
               <div>
@@ -349,7 +349,7 @@ export default function ClassBookingWidget() {
         {step === 'details' && selectedClass && selectedSlot && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <button onClick={() => setStep('time')} className="text-gray-500 hover:text-white text-sm transition-colors">
+              <button onClick={() => setStep('time')} className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 bg-zinc-800 hover:bg-zinc-700 border border-white/10 hover:border-white/20 px-3 py-1.5 rounded-lg transition-colors">
                 ← Back
               </button>
               <div>
