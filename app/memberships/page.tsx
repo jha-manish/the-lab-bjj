@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import BookingFlow from '@/components/BookingFlow'
 import { fetchCatalogItems, isWebsiteMembershipItem } from '@/lib/square'
 
 export const runtime = 'edge'
@@ -30,31 +31,71 @@ function fmtMonthlyPrice(cents: number) {
   return cents > 0 ? fmtCents(cents) : 'Contact us'
 }
 
-async function getMemberships() {
+type CatalogItems = Awaited<ReturnType<typeof fetchCatalogItems>>
+type MembershipFlowCategory = 'memberships' | 'privates'
+
+function getMemberships(items: CatalogItems) {
+  return items.filter(isWebsiteMembershipItem).map((item) => {
+    const attrs = item.itemData.websiteCustomAttributes
+    const variation = item.itemData.variations[0]
+    const amount = variation?.itemVariationData?.priceMoney?.amount
+    const priceCents = amount ? parseInt(amount, 10) : 0
+
+    return {
+      id: item.id,
+      variationId: variation?.id,
+      variationName: variation?.itemVariationData?.name,
+      amount,
+      name: attrs.name!,
+      priceCents,
+      highlight: attrs.emphasis ?? false,
+      who: attrs.description!.descriptionText,
+      includes: attrs.description!.includes,
+    }
+  })
+}
+
+function getMembershipHref(membership: ReturnType<typeof getMemberships>[number]) {
+  const params = new URLSearchParams({
+    category: 'memberships',
+    itemId: membership.id,
+    membership: membership.name,
+  })
+
+  if (membership.variationId) params.set('variationId', membership.variationId)
+  if (membership.variationName) params.set('variation', membership.variationName)
+  if (membership.amount) params.set('amount', membership.amount)
+
+  return `/memberships?${params.toString()}`
+}
+
+function getFlowCategory(
+  category: string | undefined,
+  params: Awaited<MembershipsPageProps['searchParams']>
+): MembershipFlowCategory | undefined {
+  if (category === 'privates') return category
+  if (category === 'memberships' && (params?.itemId || params?.membership)) return category
+  if (params?.itemId || params?.membership) return 'memberships'
+  return undefined
+}
+
+interface MembershipsPageProps {
+  searchParams?: Promise<{
+    category?: string
+    itemId?: string
+    membership?: string
+    variationId?: string
+    variation?: string
+    amount?: string
+  }>
+}
+
+async function getCatalogItems() {
   try {
-    const items = await fetchCatalogItems()
-
-    return items.filter(isWebsiteMembershipItem).map((item) => {
-      const attrs = item.itemData.websiteCustomAttributes
-      const variation = item.itemData.variations[0]
-      const amount = variation?.itemVariationData?.priceMoney?.amount
-      const priceCents = amount ? parseInt(amount, 10) : 0
-
-      return {
-        id: item.id,
-        variationId: variation?.id,
-        variationName: variation?.itemVariationData?.name,
-        amount,
-        name: attrs.name!,
-        priceCents,
-        highlight: attrs.emphasis ?? false,
-        who: attrs.description!.descriptionText,
-        includes: attrs.description!.includes,
-      }
-    })
+    return await fetchCatalogItems()
   } catch (err) {
-    console.error('Square memberships error:', err)
-    return []
+    console.error('Square memberships catalog error:', err)
+    return undefined
   }
 }
 
@@ -71,15 +112,40 @@ const extras = [
     price: 'By quote',
     desc: 'One-on-one with any of our world-level coaches. Fastest way to improve — perfect for beginners wanting a head start or competitors fixing specific weaknesses.',
     cta: 'Find a Coach',
-    href: '/shop?category=privates',
+    href: '/memberships?category=privates',
   },
 ]
 
-export default async function MembershipsPage() {
-  const memberships = await getMemberships()
+export default async function MembershipsPage({ searchParams }: MembershipsPageProps) {
+  const params = await searchParams
+  const catalogItems = await getCatalogItems()
+  const flowCategory = getFlowCategory(params?.category, params)
+  const memberships = catalogItems ? getMemberships(catalogItems) : []
   const membershipBases = memberships
     .filter((membership) => membership.priceCents > 0)
     .map((membership) => ({ name: membership.name, monthlyCents: membership.priceCents }))
+
+  if (flowCategory) {
+    return (
+      <section className="bg-zinc-950 py-20">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="bg-zinc-900 border border-white/10 rounded-xl p-8">
+            <BookingFlow
+              initialCatalogItems={catalogItems}
+              allowedCategories={[flowCategory]}
+              initialCategory={flowCategory}
+              initialItemId={params?.itemId}
+              initialItemName={params?.membership}
+              initialVariationId={params?.variationId}
+              initialVariationName={params?.variation}
+              initialAmount={params?.amount}
+              returnHref="/memberships"
+            />
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <>
@@ -103,7 +169,7 @@ export default async function MembershipsPage() {
           </div>
 
           {/* Membership cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
+          <div id="memberships" className="scroll-mt-24 grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
             {memberships.length === 0 && (
               <div className="lg:col-span-3 bg-zinc-900 border border-white/10 rounded-xl p-6 text-gray-400">
                 Memberships are unavailable right now. Please contact us directly to get started.
@@ -142,7 +208,7 @@ export default async function MembershipsPage() {
                 {/* CTA */}
                 <div className="bg-zinc-900 px-6 pb-6 pt-4 border-t border-white/5">
                   <Link
-                    href={`/shop?category=memberships&itemId=${encodeURIComponent(m.id)}${m.variationId ? `&variationId=${encodeURIComponent(m.variationId)}` : ''}&membership=${encodeURIComponent(m.name)}${m.variationName ? `&variation=${encodeURIComponent(m.variationName)}` : ''}${m.amount ? `&amount=${encodeURIComponent(m.amount)}` : ''}`}
+                    href={getMembershipHref(m)}
                     className={`block text-center font-black text-sm px-4 py-3 rounded transition-colors ${
                       m.highlight
                         ? 'bg-teal-500 hover:bg-teal-400 text-black'
@@ -192,14 +258,14 @@ export default async function MembershipsPage() {
                 </div>
                 <div className="bg-zinc-900 px-6 pb-6 pt-2">
                   <Link
-                    href="/shop?category=memberships"
+                    href="#memberships"
                     className={`block text-center font-black text-sm px-4 py-3 rounded transition-colors ${
                       tier.popular
                         ? 'bg-teal-500 hover:bg-teal-400 text-black'
                         : 'bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-white'
                     }`}
                   >
-                    Get Started →
+                    Choose a Membership →
                   </Link>
                 </div>
               </div>

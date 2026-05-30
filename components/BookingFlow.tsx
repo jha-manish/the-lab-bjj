@@ -123,6 +123,9 @@ interface BookingFlowProps {
   allowedCategories?: Category[]
   /** Hide prices and skip payment — just create the booking */
   freeTrial?: boolean
+  /** Optional page-level return target for flows opened from another page */
+  returnHref?: string
+  returnLabel?: string
 }
 
 function normalizeCatalogName(value: string | undefined) {
@@ -199,6 +202,8 @@ export default function BookingFlow({
   initialAmount,
   allowedCategories,
   freeTrial,
+  returnHref,
+  returnLabel = 'Back',
 }: BookingFlowProps) {
   const initialItems = initialCatalogItems && initialCategory ? filterItemsForCategory(initialCatalogItems, initialCategory) : []
   const initialSelection = findInitialSelection(
@@ -236,6 +241,13 @@ export default function BookingFlow({
   const [confirmData, setConfirmData] = useState<{ id: string; startAt?: string } | null>(null)
 
   const bookable = category ? CATEGORY_META[category].bookable : false
+  const backButtonClass = 'flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-white/10 px-3 py-1.5 rounded-lg transition-colors'
+  const categoryBackButton = (
+    <button onClick={() => { setStep('category'); setCategory(null); setItems([]) }} className={backButtonClass}>← Back</button>
+  )
+  const returnBackLink = returnHref ? (
+    <Link href={returnHref} className={backButtonClass}>← {returnLabel}</Link>
+  ) : null
 
   // Load catalog when category chosen
   useEffect(() => {
@@ -465,9 +477,7 @@ export default function BookingFlow({
       return (
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-3">
-            {!initialCategory && (
-              <button onClick={() => { setStep('category'); setCategory(null); setItems([]) }} className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-white/10 px-3 py-1.5 rounded-lg transition-colors">← Back</button>
-            )}
+            {returnBackLink ?? (!initialCategory && categoryBackButton)}
             <h2 className="text-2xl font-black">Private Training</h2>
           </div>
 
@@ -515,9 +525,7 @@ export default function BookingFlow({
       <div className="flex flex-col gap-6">
         {(!initialCategory || !freeTrial) && (
           <div className="flex items-center gap-3">
-            {!initialCategory && (
-              <button onClick={() => { setStep('category'); setCategory(null); setItems([]) }} className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-white/10 px-3 py-1.5 rounded-lg transition-colors">← Back</button>
-            )}
+            {returnBackLink ?? (!initialCategory && categoryBackButton)}
             <h2 className="text-2xl font-black">{category ? CATEGORY_META[category].label : ''}</h2>
           </div>
         )}
@@ -556,7 +564,7 @@ export default function BookingFlow({
             )}
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className={category === 'merch' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'flex flex-col gap-4'}>
             {items.map((item) => {
               const showMerchImage = category === 'merch'
 
@@ -568,7 +576,7 @@ export default function BookingFlow({
                         src={item.itemData.imageUrl}
                         alt={item.itemData?.name ? `${item.itemData.name} product image` : 'Merch product image'}
                         fill
-                        sizes="(max-width: 768px) 100vw, 704px"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 360px"
                         className="object-cover"
                         unoptimized
                       />
@@ -692,7 +700,9 @@ export default function BookingFlow({
     return (
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => setStep(prev)} className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-white/10 px-3 py-1.5 rounded-lg transition-colors">← Back</button>
+          {returnBackLink ?? (
+            <button onClick={() => setStep(prev)} className={backButtonClass}>← Back</button>
+          )}
           <h2 className="text-2xl font-black">Your Details</h2>
         </div>
 
