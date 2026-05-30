@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { KeyboardEvent } from 'react'
 
 declare global {
   interface Window {
@@ -18,7 +19,7 @@ interface SquarePayments {
 
 interface SquareCard {
   attach: (selector: string) => Promise<void>
-  tokenize: () => Promise<{ status: string; token?: string; errors?: { message: string }[] }>
+  tokenize: (verificationDetails?: unknown) => Promise<{ status: string; token?: string; errors?: { message: string }[] }>
   destroy: () => void
 }
 
@@ -86,7 +87,11 @@ const privateTrainers = [
 
 function formatPrice(amount: string | undefined, currency: string | undefined) {
   if (!amount) return 'Contact us'
-  const dollars = parseInt(amount) / 100
+  return formatMoney(parseInt(amount), currency)
+}
+
+function formatMoney(amountCents: number, currency: string | undefined) {
+  const dollars = amountCents / 100
   return new Intl.NumberFormat('en-CA', { style: 'currency', currency: currency ?? 'CAD' }).format(dollars)
 }
 
@@ -102,6 +107,21 @@ function getNext7Days() {
     days.push(d)
   }
   return days
+}
+
+function formatPhoneInput(value: string) {
+  const digits = value.replace(/\D/g, '').replace(/^1(?=\d{10})/, '').slice(0, 10)
+  const areaCode = digits.slice(0, 3)
+  const prefix = digits.slice(3, 6)
+  const lineNumber = digits.slice(6, 10)
+
+  if (digits.length <= 3) return areaCode ? `(${areaCode}` : ''
+  if (digits.length <= 6) return `(${areaCode}) ${prefix}`
+  return `(${areaCode}) ${prefix}-${lineNumber}`
+}
+
+function formatNameInput(value: string) {
+  return value.replace(/(^|[\s'-])([a-z])/g, (_, prefix: string, letter: string) => `${prefix}${letter.toUpperCase()}`)
 }
 
 interface BookingFlowProps {
@@ -126,6 +146,17 @@ interface BookingFlowProps {
   /** Optional page-level return target for flows opened from another page */
   returnHref?: string
   returnLabel?: string
+  initialPrepaidPurchase?: PrepaidMembershipPurchase
+}
+
+interface PrepaidMembershipPurchase {
+  variationId: string
+  discountId: string
+  label: string
+  recurrenceLabel: string
+  regularAmountCents: number
+  totalAmountCents: number
+  currency: string
 }
 
 function normalizeCatalogName(value: string | undefined) {
@@ -192,6 +223,15 @@ function findInitialSelection(
   return variation ? { item, variation } : undefined
 }
 
+function getCatalogDisplayName(item: CatalogItem | null) {
+  return item?.itemData?.websiteCustomAttributes?.name ?? item?.itemData?.name
+}
+
+function getMembershipPlanName(item: CatalogItem | null, prepaidPurchase: PrepaidMembershipPurchase | undefined) {
+  const name = getCatalogDisplayName(item)
+  return prepaidPurchase ? `${prepaidPurchase.label} ${name}` : name
+}
+
 export default function BookingFlow({
   initialCatalogItems,
   initialCategory,
@@ -204,6 +244,7 @@ export default function BookingFlow({
   freeTrial,
   returnHref,
   returnLabel = 'Back',
+  initialPrepaidPurchase,
 }: BookingFlowProps) {
   const initialItems = initialCatalogItems && initialCategory ? filterItemsForCategory(initialCatalogItems, initialCategory) : []
   const initialSelection = findInitialSelection(
@@ -239,8 +280,19 @@ export default function BookingFlow({
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState('')
   const [confirmData, setConfirmData] = useState<{ id: string; startAt?: string } | null>(null)
+  const [recurringMembership, setRecurringMembership] = useState(true)
+
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const emailInputRef = useRef<HTMLInputElement>(null)
+  const phoneInputRef = useRef<HTMLInputElement>(null)
+  const recurringMembershipInputRef = useRef<HTMLInputElement>(null)
+  const detailsContinueButtonRef = useRef<HTMLButtonElement>(null)
 
   const bookable = category ? CATEGORY_META[category].bookable : false
+  const activePrepaidPurchase =
+    initialPrepaidPurchase && selectedVariation?.id === initialPrepaidPurchase.variationId ? initialPrepaidPurchase : undefined
+  const membershipPurchase = category === 'memberships' && !bookable && !freeTrial
+  const membershipRecurrenceLabel = activePrepaidPurchase?.recurrenceLabel ?? 'monthly'
   const backButtonClass = 'flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-white/10 px-3 py-1.5 rounded-lg transition-colors'
   const categoryBackButton = (
     <button onClick={() => { setStep('category'); setCategory(null); setItems([]) }} className={backButtonClass}>← Back</button>
@@ -363,15 +415,34 @@ export default function BookingFlow({
     setError('')
     setProcessing(true)
     try {
-      const result = await cardInstance.tokenize()
+      const prepaidPurchase =
+        initialPrepaidPurchase && selectedVariation?.id === initialPrepaidPurchase.variationId ? initialPrepaidPurchase : undefined
+      const shouldCreateSubscription = category === 'memberships' && recurringMembership && selectedVariation
+      const [givenName, ...familyNameParts] = name.trim().split(/\s+/)
+      const price = selectedVariation?.itemVariationData?.priceMoney
+      const amountMoney = {
+        amount: prepaidPurchase?.totalAmountCents ?? parseInt(price?.amount ?? '0'),
+        currency: prepaidPurchase?.currency ?? price?.currency ?? 'CAD',
+      }
+      const result = await cardInstance.tokenize(shouldCreateSubscription ? {
+        amount: (amountMoney.amount / 100).toFixed(2),
+        currencyCode: amountMoney.currency,
+        intent: 'STORE',
+        customerInitiated: true,
+        sellerKeyedIn: false,
+        billingContact: {
+          givenName,
+          familyName: familyNameParts.join(' '),
+          email,
+          phone,
+          countryCode: 'CA',
+        },
+      } : undefined)
       if (result.status !== 'OK' || !result.token) {
         setError(result.errors?.map((e) => e.message).join(', ') ?? 'Card error')
         setProcessing(false)
         return
       }
-
-      const price = selectedVariation?.itemVariationData?.priceMoney
-      const amountMoney = { amount: parseInt(price?.amount ?? '0'), currency: price?.currency ?? 'CAD' }
 
       if (bookable && selectedSlot) {
         const seg = selectedSlot.appointmentSegments?.[0]
@@ -393,16 +464,37 @@ export default function BookingFlow({
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
         setConfirmData({ id: data.booking.id, startAt: data.booking.startAt })
+      } else if (shouldCreateSubscription) {
+        const res = await fetch('/api/square/subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceId: result.token,
+            customerName: name,
+            customerEmail: email,
+            customerPhone: phone,
+            itemVariationId: selectedVariation!.id,
+            discountId: prepaidPurchase?.discountId,
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        setConfirmData({ id: data.subscription?.id ?? data.orderTemplateId })
       } else {
         const res = await fetch('/api/square/payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sourceId: result.token,
-            amountMoney,
             customerName: name,
             customerEmail: email,
             customerPhone: phone,
+            ...(membershipPurchase
+              ? {
+                  itemVariationId: selectedVariation?.id,
+                  discountId: prepaidPurchase?.discountId,
+                }
+              : { amountMoney }),
             note: `${CATEGORY_META[category!].label}: ${selectedItem?.itemData?.name} - ${selectedVariation?.itemVariationData?.name}`,
           }),
         })
@@ -445,6 +537,70 @@ export default function BookingFlow({
       setError(e instanceof Error ? e.message : 'Booking failed')
     } finally {
       setProcessing(false)
+    }
+  }
+
+  function proceedFromDetails() {
+    if (!name || !email || !phone || processing) return
+    if (freeTrial) {
+      void handleBook()
+      return
+    }
+
+    setStep('payment')
+  }
+
+  function handleDetailsFieldKeyDown(event: KeyboardEvent<HTMLInputElement>, nextControl: HTMLInputElement | HTMLButtonElement | null) {
+    if (event.key !== 'Enter') return
+
+    event.preventDefault()
+    nextControl?.focus()
+  }
+
+  function handleFinalDetailsFieldKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'Enter') return
+
+    event.preventDefault()
+    if (membershipPurchase && recurringMembershipInputRef.current) {
+      recurringMembershipInputRef.current.focus()
+      return
+    }
+
+    proceedFromDetails()
+  }
+
+  function handleRecurringMembershipKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'Enter') return
+
+    event.preventDefault()
+    proceedFromDetails()
+  }
+
+  function handleDetailsKeyboardLoop(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== 'Tab') return
+
+    const controls = [
+      nameInputRef.current,
+      emailInputRef.current,
+      phoneInputRef.current,
+      membershipPurchase ? recurringMembershipInputRef.current : null,
+      detailsContinueButtonRef.current,
+    ].filter((control): control is HTMLInputElement | HTMLButtonElement => Boolean(control && !control.disabled))
+
+    if (controls.length === 0) return
+
+    const firstControl = controls[0]
+    const lastControl = controls[controls.length - 1]
+    const activeElement = document.activeElement
+
+    if (!event.shiftKey && activeElement === lastControl) {
+      event.preventDefault()
+      firstControl.focus()
+    }
+
+    if (event.shiftKey && activeElement === firstControl) {
+      event.preventDefault()
+      lastControl.focus()
     }
   }
 
@@ -707,8 +863,10 @@ export default function BookingFlow({
         </div>
 
         <div className="bg-zinc-900 border border-white/10 rounded-xl p-4 text-sm text-gray-300">
-          <span className="text-white font-semibold">{selectedItem?.itemData?.name}</span>
-          {selectedVariation?.itemVariationData?.name && (
+          <span className="text-white font-semibold">
+            {getMembershipPlanName(selectedItem, activePrepaidPurchase)}
+          </span>
+          {!activePrepaidPurchase && selectedVariation?.itemVariationData?.name && (
             <span className="text-gray-400"> · {selectedVariation.itemVariationData.name}</span>
           )}
           {selectedSlot && (
@@ -716,7 +874,12 @@ export default function BookingFlow({
               · {new Date(selectedSlot.startAt).toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' })} at {formatTime(selectedSlot.startAt)}
             </span>
           )}
-          {!freeTrial && (
+          {activePrepaidPurchase ? (
+            <span className="ml-2">
+              <span className="text-gray-500 line-through">{formatMoney(activePrepaidPurchase.regularAmountCents, activePrepaidPurchase.currency)}</span>
+              <span className="ml-2 font-black text-teal-400">{formatMoney(activePrepaidPurchase.totalAmountCents, activePrepaidPurchase.currency)}</span>
+            </span>
+          ) : !freeTrial && (
             <span className="ml-2 font-black text-teal-400">
               {formatPrice(
                 selectedVariation?.itemVariationData?.priceMoney?.amount,
@@ -726,53 +889,87 @@ export default function BookingFlow({
           )}
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div onKeyDown={handleDetailsKeyboardLoop} className="flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold mb-2">Full Name *</label>
               <input
+                ref={nameInputRef}
                 required
+                type="text"
+                autoCapitalize="words"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setName(formatNameInput(e.target.value))}
+                onKeyDown={(e) => handleDetailsFieldKeyDown(e, emailInputRef.current)}
                 className="w-full bg-zinc-800 border border-white/10 rounded px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 transition-colors"
                 placeholder="Your name"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2">Phone *</label>
+              <label className="block text-sm font-semibold mb-2">Email *</label>
               <input
+                ref={emailInputRef}
                 required
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                type="email"
+                autoCapitalize="none"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => handleDetailsFieldKeyDown(e, phoneInputRef.current)}
                 className="w-full bg-zinc-800 border border-white/10 rounded px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 transition-colors"
-                placeholder="(519) 000-0000"
+                placeholder="you@email.com"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-2">Email *</label>
+            <label className="block text-sm font-semibold mb-2">Phone *</label>
             <input
+              ref={phoneInputRef}
               required
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              value={phone}
+              onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
+              onKeyDown={handleFinalDetailsFieldKeyDown}
               className="w-full bg-zinc-800 border border-white/10 rounded px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 transition-colors"
-              placeholder="you@email.com"
+              placeholder="(519) 000-0000"
             />
           </div>
+
+          {membershipPurchase && (
+            <label className="flex gap-3 rounded-xl border border-white/10 bg-zinc-900 p-4 text-sm text-gray-300 cursor-pointer hover:border-teal-500/50 transition-colors">
+              <input
+                ref={recurringMembershipInputRef}
+                type="checkbox"
+                checked={recurringMembership}
+                onChange={(e) => setRecurringMembership(e.target.checked)}
+                onKeyDown={handleRecurringMembershipKeyDown}
+                className="mt-1 size-4 accent-teal-500"
+              />
+              <span>
+                <span className="block font-semibold text-white">Make this membership recur {membershipRecurrenceLabel}</span>
+                <span className="block text-gray-400">
+                  {recurringMembership
+                    ? `Your card will be billed ${membershipRecurrenceLabel} until you cancel.`
+                    : 'This will be a one-time payment and will not renew automatically.'}
+                </span>
+              </span>
+            </label>
+          )}
+
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+          <button
+            ref={detailsContinueButtonRef}
+            disabled={!name || !email || !phone || processing}
+            onClick={proceedFromDetails}
+            className="bg-teal-500 hover:bg-teal-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-black px-8 py-4 rounded text-lg transition-colors"
+          >
+            {freeTrial
+              ? (processing ? 'Booking…' : 'Book My Free Trial →')
+              : 'Continue to Payment →'}
+          </button>
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        <button
-          disabled={!name || !email || !phone || processing}
-          onClick={freeTrial ? handleBook : () => setStep('payment')}
-          className="bg-teal-500 hover:bg-teal-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-black px-8 py-4 rounded text-lg transition-colors"
-        >
-          {freeTrial
-            ? (processing ? 'Booking…' : 'Book My Free Trial →')
-            : 'Continue to Payment →'}
-        </button>
       </div>
     )
   }
@@ -780,6 +977,8 @@ export default function BookingFlow({
   // ── Step: Payment ───────────────────────────────────────────────────────────
   if (step === 'payment') {
     const price = selectedVariation?.itemVariationData?.priceMoney
+    const paymentAmountCents = activePrepaidPurchase?.totalAmountCents ?? parseInt(price?.amount ?? '0')
+    const paymentCurrency = activePrepaidPurchase?.currency ?? price?.currency
     return (
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
@@ -789,13 +988,23 @@ export default function BookingFlow({
 
         <div className="bg-zinc-900 border border-white/10 rounded-xl p-4 text-sm text-gray-300 flex items-center justify-between">
           <div>
-            <span className="text-white font-semibold">{selectedItem?.itemData?.name}</span>
-            {selectedVariation?.itemVariationData?.name && (
+            <span className="text-white font-semibold">
+              {getMembershipPlanName(selectedItem, activePrepaidPurchase)}
+            </span>
+            {!activePrepaidPurchase && selectedVariation?.itemVariationData?.name && (
               <span className="text-gray-400"> · {selectedVariation.itemVariationData.name}</span>
+            )}
+            {activePrepaidPurchase && (
+              <div className="mt-1 text-xs">
+                <span className="text-gray-500 line-through">{formatMoney(activePrepaidPurchase.regularAmountCents, activePrepaidPurchase.currency)}</span>
+              </div>
+            )}
+            {membershipPurchase && recurringMembership && (
+              <div className="mt-1 text-xs text-gray-400">Renews {membershipRecurrenceLabel} until cancelled.</div>
             )}
           </div>
           <span className="font-black text-teal-400 text-base">
-            {formatPrice(price?.amount, price?.currency)}
+            {formatMoney(paymentAmountCents, paymentCurrency)}
           </span>
         </div>
 
@@ -815,7 +1024,7 @@ export default function BookingFlow({
           onClick={handlePay}
           className="bg-teal-500 hover:bg-teal-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-black px-8 py-4 rounded text-lg transition-colors"
         >
-          {processing ? 'Processing…' : `Pay ${formatPrice(price?.amount, price?.currency)} →`}
+          {processing ? 'Processing…' : `Pay ${formatMoney(paymentAmountCents, paymentCurrency)} →`}
         </button>
 
         <p className="text-gray-500 text-xs text-center flex items-center justify-center gap-1">
@@ -831,12 +1040,14 @@ export default function BookingFlow({
       <div className="flex flex-col items-center gap-6 py-8 text-center">
         <div className="w-16 h-16 rounded-full bg-teal-500/20 flex items-center justify-center text-3xl">✓</div>
         <h2 className="text-3xl font-black">
-          {bookable ? 'Booking Confirmed!' : 'Order Confirmed!'}
+          {bookable ? 'Booking Confirmed!' : membershipPurchase && recurringMembership ? 'Membership Started!' : 'Order Confirmed!'}
         </h2>
         <p className="text-gray-400 max-w-sm">
           {bookable
             ? `You're booked for ${selectedItem?.itemData?.name}${selectedSlot ? ` on ${new Date(selectedSlot.startAt).toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' })} at ${formatTime(selectedSlot.startAt)}` : ''}. We'll email a confirmation to ${email}.`
-            : `Your order is confirmed. We'll email a receipt to ${email}.`}
+            : membershipPurchase && recurringMembership
+              ? `Your ${getMembershipPlanName(selectedItem, activePrepaidPurchase)} recurring membership is set up. Square will email invoices and receipts to ${email}.`
+              : `Your order is confirmed. We'll email a receipt to ${email}.`}
         </p>
         {confirmData?.id && (
           <p className="text-gray-500 text-xs">Reference: {confirmData.id}</p>

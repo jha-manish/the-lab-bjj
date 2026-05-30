@@ -1,22 +1,56 @@
 export const runtime = 'edge'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { squareFetch, LOCATION_ID, findOrCreateCustomer } from '@/lib/square'
+import { squareFetch, LOCATION_ID, findOrCreateCustomer, validateMembershipCheckout } from '@/lib/square'
 
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as {
       sourceId: string
-      amountMoney: { amount: number; currency: string }
+      amountMoney?: { amount: number; currency: string }
       customerName: string
       customerEmail: string
       customerPhone: string
       note?: string
+      itemVariationId?: string
+      discountId?: string
     }
 
-    const { sourceId, amountMoney, customerName, customerEmail, customerPhone, note } = body
+    const { sourceId, amountMoney, customerName, customerEmail, customerPhone, note, itemVariationId, discountId } = body
+
+    if (!sourceId || !customerName || !customerEmail || !customerPhone) {
+      return NextResponse.json({ error: 'Missing required payment fields' }, { status: 400 })
+    }
 
     const customerId = await findOrCreateCustomer(customerEmail, customerName, customerPhone)
+    let validatedAmountMoney: { amount: number; currency: string }
+    let validatedNote = note ?? 'The Jiu-Jitsu Lab purchase'
+
+    if (itemVariationId || discountId) {
+      if (!itemVariationId) {
+        return NextResponse.json({ error: 'Missing membership variation' }, { status: 400 })
+      }
+
+      let checkout: Awaited<ReturnType<typeof validateMembershipCheckout>>
+      try {
+        checkout = await validateMembershipCheckout(itemVariationId, discountId)
+      } catch (err) {
+        return NextResponse.json(
+          { error: err instanceof Error ? err.message : 'Invalid membership checkout' },
+          { status: 400 }
+        )
+      }
+
+      validatedAmountMoney = {
+        amount: checkout.totalAmountCents,
+        currency: checkout.currency,
+      }
+      validatedNote = `${checkout.discount ? 'Pre-paid' : 'Monthly'} membership: ${checkout.membershipName}`
+    } else if (!amountMoney || !Number.isFinite(amountMoney.amount) || amountMoney.amount <= 0) {
+      return NextResponse.json({ error: 'Missing payment amount' }, { status: 400 })
+    } else {
+      validatedAmountMoney = amountMoney
+    }
 
     const payRes = await squareFetch('/payments', {
       method: 'POST',
@@ -24,12 +58,12 @@ export async function POST(request: NextRequest) {
         idempotency_key: crypto.randomUUID(),
         source_id: sourceId,
         amount_money: {
-          amount: amountMoney.amount,
-          currency: amountMoney.currency ?? 'CAD',
+          amount: validatedAmountMoney.amount,
+          currency: validatedAmountMoney.currency ?? 'CAD',
         },
         location_id: LOCATION_ID,
         customer_id: customerId,
-        note: note ?? 'The Jiu-Jitsu Lab purchase',
+        note: validatedNote,
       }),
     })
 

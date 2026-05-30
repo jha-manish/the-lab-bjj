@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import BookingFlow from '@/components/BookingFlow'
-import { fetchCatalogItems, isWebsiteMembershipItem } from '@/lib/square'
+import { fetchCatalogDiscounts, fetchCatalogItems, isWebsiteMembershipItem, type CatalogDiscount } from '@/lib/square'
 
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
@@ -13,11 +13,8 @@ export const metadata: Metadata = {
   openGraph: { url: 'https://labjiujitsu.com/memberships' },
 }
 
-const commitmentTiers = [
-  { months: 3,  discount: 0.10, label: '3 Months', badge: '10% off' },
-  { months: 6,  discount: 0.15, label: '6 Months', badge: '15% off', popular: true },
-  { months: 12, discount: 0.20, label: '1 Year',   badge: '20% off' },
-]
+const PREPAID_MEMBERSHIP_DISCOUNT_RE = /^(\d+)\s+(day|week|month|year)s?\s+pre-paid membership$/i
+const DAYS_PER_MONTH = 365.2425 / 12
 
 function fmt(n: number) {
   return n % 1 === 0 ? `$${n}` : `$${n.toFixed(2)}`
@@ -33,12 +30,90 @@ function fmtMonthlyPrice(cents: number) {
 
 type CatalogItems = Awaited<ReturnType<typeof fetchCatalogItems>>
 type MembershipFlowCategory = 'memberships' | 'privates'
+type DurationUnit = 'day' | 'week' | 'month' | 'year'
+
+function durationMonths(quantity: number, unit: DurationUnit) {
+  if (unit === 'day') return quantity / DAYS_PER_MONTH
+  if (unit === 'week') return (quantity * 7) / DAYS_PER_MONTH
+  if (unit === 'year') return quantity * 12
+  return quantity
+}
+
+function durationLabel(quantity: number, unit: DurationUnit) {
+  const label = unit[0].toUpperCase() + unit.slice(1)
+  return `${quantity} ${label}${quantity === 1 ? '' : 's'}`
+}
+
+function planDurationLabel(quantity: number, unit: DurationUnit) {
+  const label = unit[0].toUpperCase() + unit.slice(1)
+  return `${quantity} ${label}`
+}
+
+function formatDiscountBadge(discount: CatalogDiscount) {
+  if (discount.percentage && discount.percentage > 0) {
+    return `${discount.percentage % 1 === 0 ? discount.percentage : discount.percentage.toFixed(2)}% off`
+  }
+
+  if (discount.amountCents && discount.amountCents > 0) {
+    return `${fmtCents(discount.amountCents)} off`
+  }
+
+  return 'Pre-paid'
+}
+
+function applyDiscount(totalCents: number, discount: CatalogDiscount) {
+  if (discount.percentage && discount.percentage > 0) {
+    return Math.max(0, Math.round(totalCents * (1 - discount.percentage / 100)))
+  }
+
+  if (discount.amountCents && discount.amountCents > 0) {
+    return Math.max(0, totalCents - discount.amountCents)
+  }
+
+  return totalCents
+}
+
+function getPrepaidMembershipDiscounts(discounts: CatalogDiscount[]) {
+  return discounts
+    .map((discount) => {
+      const match = discount.name.match(PREPAID_MEMBERSHIP_DISCOUNT_RE)
+      if (!match) return undefined
+
+      const quantity = parseInt(match[1], 10)
+      const unit = match[2].toLowerCase() as DurationUnit
+      const months = durationMonths(quantity, unit)
+
+      return {
+        ...discount,
+        quantity,
+        unit,
+        months,
+        label: durationLabel(quantity, unit),
+        planLabel: planDurationLabel(quantity, unit),
+        badge: formatDiscountBadge(discount),
+        popular: Math.abs(months - 6) < 0.01,
+      }
+    })
+    .filter((discount): discount is NonNullable<typeof discount> => Boolean(discount))
+    .sort((a, b) => a.months - b.months)
+}
+
+function getMembershipDurationMonths(serviceDuration: string | undefined) {
+  if (!serviceDuration) return 1
+
+  const durationMs = parseInt(serviceDuration, 10)
+  if (!Number.isFinite(durationMs)) return 1
+
+  const dayMs = 24 * 60 * 60 * 1000
+  return durationMs >= dayMs ? durationMs / (DAYS_PER_MONTH * dayMs) : 1
+}
 
 function getMemberships(items: CatalogItems) {
   return items.filter(isWebsiteMembershipItem).map((item) => {
     const attrs = item.itemData.websiteCustomAttributes
     const variation = item.itemData.variations[0]
     const amount = variation?.itemVariationData?.priceMoney?.amount
+    const currency = variation?.itemVariationData?.priceMoney?.currency ?? 'CAD'
     const priceCents = amount ? parseInt(amount, 10) : 0
 
     return {
@@ -46,8 +121,10 @@ function getMemberships(items: CatalogItems) {
       variationId: variation?.id,
       variationName: variation?.itemVariationData?.name,
       amount,
+      currency,
       name: attrs.name!,
       priceCents,
+      durationMonths: getMembershipDurationMonths(variation?.itemVariationData?.serviceDuration),
       highlight: attrs.emphasis ?? false,
       who: attrs.description!.descriptionText,
       includes: attrs.description!.includes,
@@ -60,6 +137,21 @@ function getMembershipHref(membership: ReturnType<typeof getMemberships>[number]
     category: 'memberships',
     itemId: membership.id,
     membership: membership.name,
+  })
+
+  if (membership.variationId) params.set('variationId', membership.variationId)
+  if (membership.variationName) params.set('variation', membership.variationName)
+  if (membership.amount) params.set('amount', membership.amount)
+
+  return `/memberships?${params.toString()}`
+}
+
+function getPrepaidMembershipHref(membership: ReturnType<typeof getMemberships>[number], discount: ReturnType<typeof getPrepaidMembershipDiscounts>[number]) {
+  const params = new URLSearchParams({
+    category: 'memberships',
+    itemId: membership.id,
+    membership: membership.name,
+    prepaidDiscountId: discount.id,
   })
 
   if (membership.variationId) params.set('variationId', membership.variationId)
@@ -87,6 +179,7 @@ interface MembershipsPageProps {
     variationId?: string
     variation?: string
     amount?: string
+    prepaidDiscountId?: string
   }>
 }
 
@@ -96,6 +189,15 @@ async function getCatalogItems() {
   } catch (err) {
     console.error('Square memberships catalog error:', err)
     return undefined
+  }
+}
+
+async function getCatalogDiscounts() {
+  try {
+    return await fetchCatalogDiscounts()
+  } catch (err) {
+    console.error('Square discounts catalog error:', err)
+    return []
   }
 }
 
@@ -118,12 +220,46 @@ const extras = [
 
 export default async function MembershipsPage({ searchParams }: MembershipsPageProps) {
   const params = await searchParams
-  const catalogItems = await getCatalogItems()
+  const [catalogItems, catalogDiscounts] = await Promise.all([getCatalogItems(), getCatalogDiscounts()])
   const flowCategory = getFlowCategory(params?.category, params)
   const memberships = catalogItems ? getMemberships(catalogItems) : []
+  const prepaidDiscounts = getPrepaidMembershipDiscounts(catalogDiscounts)
   const membershipBases = memberships
     .filter((membership) => membership.priceCents > 0)
-    .map((membership) => ({ name: membership.name, monthlyCents: membership.priceCents }))
+    .map((membership) => ({
+      name: membership.name,
+      monthlyCents: membership.priceCents / membership.durationMonths,
+      currency: membership.currency,
+      membership,
+    }))
+  const selectedPrepaidDiscount = prepaidDiscounts.find((discount) => discount.id === params?.prepaidDiscountId)
+  const selectedPrepaidMembership = selectedPrepaidDiscount
+    ? memberships.find((membership) =>
+      membership.id === params?.itemId ||
+      membership.variationId === params?.variationId ||
+      membership.name === params?.membership
+    )
+    : undefined
+  const prepaidRegularAmountCents =
+    selectedPrepaidDiscount && selectedPrepaidMembership
+      ? Math.round((selectedPrepaidMembership.priceCents / selectedPrepaidMembership.durationMonths) * selectedPrepaidDiscount.months)
+      : undefined
+  const prepaidTotalAmountCents =
+    prepaidRegularAmountCents !== undefined && selectedPrepaidDiscount
+      ? applyDiscount(prepaidRegularAmountCents, selectedPrepaidDiscount)
+      : undefined
+  const initialPrepaidPurchase =
+    selectedPrepaidDiscount && selectedPrepaidMembership?.variationId && prepaidRegularAmountCents !== undefined && prepaidTotalAmountCents !== undefined
+      ? {
+          variationId: selectedPrepaidMembership.variationId,
+          discountId: selectedPrepaidDiscount.id,
+          label: selectedPrepaidDiscount.planLabel,
+          recurrenceLabel: `every ${selectedPrepaidDiscount.label.toLowerCase()}`,
+          regularAmountCents: prepaidRegularAmountCents,
+          totalAmountCents: prepaidTotalAmountCents,
+          currency: selectedPrepaidMembership.currency,
+        }
+      : undefined
 
   if (flowCategory) {
     return (
@@ -139,6 +275,7 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
               initialVariationId={params?.variationId}
               initialVariationName={params?.variation}
               initialAmount={params?.amount}
+              initialPrepaidPurchase={initialPrepaidPurchase}
               returnHref="/memberships"
             />
           </div>
@@ -226,47 +363,44 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
           <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">Save More</p>
           <h2 className="text-4xl font-black mb-3">Commitment <span className="text-teal-400">Plans</span></h2>
           <p className="text-gray-400 max-w-2xl mb-10 leading-relaxed">
-            Pay upfront for 3, 6, or 12 months and save. Applies to Adult, Student, and Kids memberships.
+            Pay upfront and save. Applies to Adult, Student, and Kids memberships.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-            {commitmentTiers.map((tier) => (
+            {prepaidDiscounts.length === 0 && (
+              <div className="md:col-span-3 bg-zinc-900 border border-white/10 rounded-xl p-6 text-gray-400">
+                Pre-paid membership plans are unavailable right now. Please contact us directly to get started.
+              </div>
+            )}
+            {prepaidDiscounts.map((discount) => (
               <div
-                key={tier.months}
-                className={`rounded-xl border flex flex-col overflow-hidden ${tier.popular ? 'border-teal-500' : 'border-white/10'}`}
+                key={discount.id}
+                className={`rounded-xl border flex flex-col overflow-hidden ${discount.popular ? 'border-teal-500' : 'border-white/10'}`}
               >
-                <div className={`px-6 py-4 flex items-center justify-between ${tier.popular ? 'bg-teal-500' : 'bg-zinc-800'}`}>
-                  <span className={`font-black text-lg ${tier.popular ? 'text-black' : 'text-white'}`}>{tier.label}</span>
-                  <span className={`text-xs font-black px-2 py-1 rounded ${tier.popular ? 'bg-black/20 text-black' : 'bg-teal-500/20 text-teal-400'}`}>
-                    {tier.badge}
+                <div className={`px-6 py-4 flex items-center justify-between ${discount.popular ? 'bg-teal-500' : 'bg-zinc-800'}`}>
+                  <span className={`font-black text-lg ${discount.popular ? 'text-black' : 'text-white'}`}>{discount.label}</span>
+                  <span className={`text-xs font-black px-2 py-1 rounded ${discount.popular ? 'bg-black/20 text-black' : 'bg-teal-500/20 text-teal-400'}`}>
+                    {discount.badge}
                   </span>
                 </div>
                 <div className="bg-zinc-900 flex flex-col divide-y divide-white/5 flex-1">
                   {membershipBases.map((mp) => {
-                    const total = (mp.monthlyCents / 100) * tier.months * (1 - tier.discount)
-                    const perMonth = total / tier.months
+                    const totalCents = applyDiscount(mp.monthlyCents * discount.months, discount)
+                    const perMonthCents = totalCents / discount.months
                     return (
-                      <div key={mp.name} className="px-6 py-4">
+                      <Link
+                        key={mp.name}
+                        href={getPrepaidMembershipHref(mp.membership, discount)}
+                        className="block px-6 py-4 text-left transition-colors hover:bg-zinc-800/70 focus:bg-zinc-800/70 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
+                      >
                         <p className="text-sm text-gray-400 mb-1">{mp.name}</p>
                         <div className="flex items-baseline justify-between">
-                          <span className="text-2xl font-black text-white">{fmt(total)}</span>
-                          <span className="text-sm text-gray-500">{fmt(perMonth)}/mo</span>
+                          <span className="text-2xl font-black text-white">{fmtCents(totalCents)}</span>
+                          <span className="text-sm text-gray-500">{fmtCents(perMonthCents)}/mo</span>
                         </div>
-                      </div>
+                      </Link>
                     )
                   })}
-                </div>
-                <div className="bg-zinc-900 px-6 pb-6 pt-2">
-                  <Link
-                    href="#memberships"
-                    className={`block text-center font-black text-sm px-4 py-3 rounded transition-colors ${
-                      tier.popular
-                        ? 'bg-teal-500 hover:bg-teal-400 text-black'
-                        : 'bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-white'
-                    }`}
-                  >
-                    Choose a Membership →
-                  </Link>
                 </div>
               </div>
             ))}
