@@ -51,7 +51,7 @@ interface AvailabilityCacheEntry {
 }
 
 const globalCatalogCache = globalThis as typeof globalThis & {
-  __theLabCatalogCacheV4?: CatalogCache
+  __theLabCatalogCacheV5?: CatalogCache
   __theLabAvailabilityCacheV1?: Record<string, AvailabilityCacheEntry>
 }
 
@@ -182,6 +182,9 @@ function extractWebsiteCustomAttributes(obj: Record<string, unknown>): WebsiteCu
 export function transformItem(obj: Record<string, unknown>) {
   const d = (obj.item_data ?? {}) as Record<string, unknown>
   const rawVars = (d.variations ?? []) as Record<string, unknown>[]
+  const imageIds = Array.isArray(d.image_ids)
+    ? d.image_ids.filter((imageId): imageId is string => typeof imageId === 'string')
+    : []
   const websiteCustomAttributes = extractWebsiteCustomAttributes(obj)
   const includes = parseIncludes(d.description_plaintext ?? d.description)
 
@@ -215,6 +218,9 @@ export function transformItem(obj: Record<string, unknown>) {
       name: websiteCustomAttributes.name ?? (d.name as string | undefined),
       description: websiteCustomAttributes.description?.descriptionText ?? (d.description as string | undefined),
       productType: d.product_type as string | undefined,
+      imageIds,
+      imageUrl: undefined as string | undefined,
+      imageUrls: [] as string[],
       websiteCustomAttributes,
       variations,
     },
@@ -242,7 +248,7 @@ export function isWebsiteMembershipItem(item: CatalogItem) {
 
 export async function fetchCatalogItems() {
   const now = Date.now()
-  const cached = globalCatalogCache.__theLabCatalogCacheV4
+  const cached = globalCatalogCache.__theLabCatalogCacheV5
 
   if (cached?.items && cached.expiresAt > now) {
     return cached.items
@@ -253,26 +259,26 @@ export async function fetchCatalogItems() {
   }
 
   const promise = fetchFreshCatalogItems()
-  globalCatalogCache.__theLabCatalogCacheV4 = {
+  globalCatalogCache.__theLabCatalogCacheV5 = {
     expiresAt: now + CATALOG_CACHE_TTL_MS,
     promise,
   }
 
   try {
     const items = await promise
-    globalCatalogCache.__theLabCatalogCacheV4 = {
+    globalCatalogCache.__theLabCatalogCacheV5 = {
       expiresAt: Date.now() + CATALOG_CACHE_TTL_MS,
       items,
     }
     return items
   } catch (err) {
-    globalCatalogCache.__theLabCatalogCacheV4 = undefined
+    globalCatalogCache.__theLabCatalogCacheV5 = undefined
     throw err
   }
 }
 
 export function clearCatalogItemsCache() {
-  globalCatalogCache.__theLabCatalogCacheV4 = undefined
+  globalCatalogCache.__theLabCatalogCacheV5 = undefined
 }
 
 function availabilityCacheKey(serviceVariationId: string, startDate: string) {
@@ -365,6 +371,36 @@ async function searchCatalogItems(body: Record<string, unknown>) {
   return items
 }
 
+async function fetchCatalogImageUrls(imageIds: string[]) {
+  const uniqueImageIds = Array.from(new Set(imageIds))
+  if (uniqueImageIds.length === 0) return new Map<string, string>()
+
+  const res = await squareFetch('/catalog/batch-retrieve', {
+    method: 'POST',
+    body: JSON.stringify({
+      object_ids: uniqueImageIds,
+      include_related_objects: false,
+    }),
+  })
+
+  if (!res.ok) throw new Error(`Square catalog images ${res.status}: ${await res.text()}`)
+
+  const data = (await res.json()) as { objects?: Record<string, unknown>[] }
+  const urlsById = new Map<string, string>()
+
+  for (const obj of data.objects ?? []) {
+    const imageData = obj.image_data
+    if (obj.type !== 'IMAGE' || typeof obj.id !== 'string' || !isRecord(imageData)) continue
+
+    const url = imageData.url
+    if (typeof url === 'string' && url.trim()) {
+      urlsById.set(obj.id, url)
+    }
+  }
+
+  return urlsById
+}
+
 async function fetchFreshCatalogItems() {
   const [displayItems, appointmentServices] = await Promise.all([
     searchCatalogItems({
@@ -380,11 +416,33 @@ async function fetchFreshCatalogItems() {
     }),
   ])
 
-  return Array.from(
+  const items = Array.from(
     [...displayItems, ...appointmentServices]
       .reduce((itemsById, item) => itemsById.set(item.id, item), new Map<string, CatalogItem>())
       .values()
   )
+  let imageUrlsById = new Map<string, string>()
+
+  try {
+    imageUrlsById = await fetchCatalogImageUrls(items.flatMap((item) => item.itemData.imageIds))
+  } catch (err) {
+    console.error('Square catalog image fetch error:', err)
+  }
+
+  return items.map((item) => {
+    const imageUrls = item.itemData.imageIds
+      .map((imageId) => imageUrlsById.get(imageId))
+      .filter((url): url is string => Boolean(url))
+
+    return {
+      ...item,
+      itemData: {
+        ...item.itemData,
+        imageUrl: imageUrls[0],
+        imageUrls,
+      },
+    }
+  })
 }
 
 async function fetchFreshAvailability(serviceVariationId: string, startDate: string) {
