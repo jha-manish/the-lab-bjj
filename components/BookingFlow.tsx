@@ -42,6 +42,8 @@ interface CatalogItem {
     name?: string
     description?: string
     productType?: string
+    imageUrl?: string
+    imageUrls?: string[]
     websiteCustomAttributes?: {
       name?: string
       display?: boolean
@@ -555,37 +557,56 @@ export default function BookingFlow({
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {items.map((item) => (
-              <div key={item.id} className="bg-zinc-900 border border-white/10 rounded-xl p-6">
-                <div className="font-black text-lg mb-1">{item.itemData?.name}</div>
-                {item.itemData?.description && (
-                  <p className="text-gray-400 text-sm mb-4">{item.itemData.description}</p>
-                )}
-                <div className="flex flex-col gap-2">
-                  {item.itemData?.variations?.map((variation) => (
-                    <button
-                      key={variation.id}
-                      onClick={() => {
-                        setSelectedItem(item)
-                        setSelectedVariation(variation)
-                        setStep(bookable ? 'datetime' : 'details')
-                      }}
-                      className="flex items-center justify-between bg-zinc-800 hover:bg-zinc-700 border border-white/10 hover:border-teal-500 rounded-lg px-4 py-3 transition-colors text-left"
-                    >
-                      <span className="font-semibold">
-                        {variation.itemVariationData?.name ?? 'Standard'}
-                      </span>
-                      <span className="text-teal-400 font-black">
-                        {formatPrice(
-                          variation.itemVariationData?.priceMoney?.amount,
-                          variation.itemVariationData?.priceMoney?.currency
-                        )}
-                      </span>
-                    </button>
-                  ))}
+            {items.map((item) => {
+              const showMerchImage = category === 'merch'
+
+              return (
+                <div key={item.id} className="bg-zinc-900 border border-white/10 rounded-xl overflow-hidden">
+                  {showMerchImage && item.itemData?.imageUrl && (
+                    <div className="relative aspect-[4/3] bg-zinc-800">
+                      <Image
+                        src={item.itemData.imageUrl}
+                        alt={item.itemData?.name ? `${item.itemData.name} product image` : 'Merch product image'}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 704px"
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  )}
+
+                  <div className="p-6">
+                    <div className="font-black text-lg mb-1">{item.itemData?.name}</div>
+                    {item.itemData?.description && (
+                      <p className="text-gray-400 text-sm mb-4">{item.itemData.description}</p>
+                    )}
+                    <div className="flex flex-col gap-2">
+                      {item.itemData?.variations?.map((variation) => (
+                        <button
+                          key={variation.id}
+                          onClick={() => {
+                            setSelectedItem(item)
+                            setSelectedVariation(variation)
+                            setStep(bookable ? 'datetime' : 'details')
+                          }}
+                          className="flex items-center justify-between bg-zinc-800 hover:bg-zinc-700 border border-white/10 hover:border-teal-500 rounded-lg px-4 py-3 transition-colors text-left"
+                        >
+                          <span className="font-semibold">
+                            {variation.itemVariationData?.name ?? 'Standard'}
+                          </span>
+                          <span className="text-teal-400 font-black">
+                            {formatPrice(
+                              variation.itemVariationData?.priceMoney?.amount,
+                              variation.itemVariationData?.priceMoney?.currency
+                            )}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
