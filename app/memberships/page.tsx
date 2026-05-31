@@ -254,7 +254,6 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
           variationId: selectedPrepaidMembership.variationId,
           discountId: selectedPrepaidDiscount.id,
           label: selectedPrepaidDiscount.planLabel,
-          recurrenceLabel: `every ${selectedPrepaidDiscount.label.toLowerCase()}`,
           regularAmountCents: prepaidRegularAmountCents,
           totalAmountCents: prepaidTotalAmountCents,
           currency: selectedPrepaidMembership.currency,
