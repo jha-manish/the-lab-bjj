@@ -1,7 +1,15 @@
 export const runtime = 'edge'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { squareFetch, LOCATION_ID, findOrCreateCustomer, transformBooking } from '@/lib/square'
+import {
+  squareFetch,
+  LOCATION_ID,
+  findOrCreateCustomer,
+  getPublicSquareErrorMessage,
+  getPublicSquareErrorStatus,
+  throwSquareApiError,
+  transformBooking,
+} from '@/lib/square'
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,7 +61,13 @@ export async function POST(request: NextRequest) {
       }),
     })
 
-    if (!bookingRes.ok) throw new Error(`Booking failed: ${await bookingRes.text()}`)
+    if (!bookingRes.ok) {
+      await throwSquareApiError(
+        bookingRes,
+        'Booking failed',
+        'We could not create the booking. Please try again in a moment or contact us for help.'
+      )
+    }
 
     const bookingData = (await bookingRes.json()) as { booking?: Record<string, unknown> }
     if (!bookingData.booking) throw new Error('No booking returned')
@@ -74,15 +88,21 @@ export async function POST(request: NextRequest) {
           note: `Booking: ${serviceVariationId}`,
         }),
       })
-      if (!payRes.ok) throw new Error(`Payment failed: ${await payRes.text()}`)
+      if (!payRes.ok) {
+        await throwSquareApiError(
+          payRes,
+          'Booking payment failed',
+          'We created the booking, but could not complete the payment. Please check your card details and contact us if you need help.'
+        )
+      }
     }
 
     return NextResponse.json({ booking: transformBooking(bookingData.booking) })
   } catch (err) {
     console.error('Square booking error:', err)
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Booking failed' },
-      { status: 500 }
+      { error: getPublicSquareErrorMessage(err, 'We could not complete the booking. Please try again in a moment or contact us for help.') },
+      { status: getPublicSquareErrorStatus(err) }
     )
   }
 }

@@ -15,6 +15,75 @@ export function squareFetch(path: string, options: RequestInit = {}): Promise<Re
   })
 }
 
+export class SquareApiError extends Error {
+  constructor(
+    message: string,
+    public readonly userMessage: string,
+    public readonly status: number,
+    public readonly responseBody: string
+  ) {
+    super(message)
+  }
+}
+
+function getSquareErrorCodes(responseBody: string) {
+  try {
+    const parsed = JSON.parse(responseBody) as unknown
+    if (!isRecord(parsed) || !Array.isArray(parsed.errors)) return []
+
+    return parsed.errors
+      .filter(isRecord)
+      .map((error) => ({
+        code: typeof error.code === 'string' ? error.code : undefined,
+        detail: typeof error.detail === 'string' ? error.detail : undefined,
+      }))
+  } catch {
+    return []
+  }
+}
+
+function getSquareUserMessage(responseBody: string, fallbackMessage: string) {
+  const errors = getSquareErrorCodes(responseBody)
+  const codes = new Set(errors.map((error) => error.code))
+
+  if (codes.has('CARD_DECLINED') || codes.has('GENERIC_DECLINE')) {
+    return 'The card was declined. Please try a different card, or contact your bank if you think this should have worked.'
+  }
+
+  if (
+    codes.has('INVALID_CARD') ||
+    codes.has('INVALID_CARD_DATA') ||
+    codes.has('VERIFY_CVV_FAILURE') ||
+    codes.has('VERIFY_AVS_FAILURE') ||
+    codes.has('BAD_EXPIRATION') ||
+    codes.has('INVALID_EXPIRATION') ||
+    codes.has('CARD_TOKEN_EXPIRED') ||
+    codes.has('CARD_TOKEN_USED')
+  ) {
+    return 'We could not verify that card. Please check the card number, expiry date, CVV, and postal code, then try again or use a different card.'
+  }
+
+  return fallbackMessage
+}
+
+export async function throwSquareApiError(response: Response, context: string, fallbackMessage: string): Promise<never> {
+  const responseBody = await response.text()
+  throw new SquareApiError(
+    `${context}: ${response.status} ${responseBody}`,
+    getSquareUserMessage(responseBody, fallbackMessage),
+    response.status,
+    responseBody
+  )
+}
+
+export function getPublicSquareErrorMessage(err: unknown, fallbackMessage: string) {
+  return err instanceof SquareApiError ? err.userMessage : fallbackMessage
+}
+
+export function getPublicSquareErrorStatus(err: unknown) {
+  return err instanceof SquareApiError && err.status < 500 ? 400 : 500
+}
+
 // ── Transform helpers (REST snake_case → camelCase shape BookingFlow expects) ──
 
 export interface WebsiteDescription {
@@ -39,17 +108,6 @@ export interface CatalogDiscount {
   percentage?: number
   amountCents?: number
   currency?: string
-}
-
-export interface CatalogSubscriptionPlanVariation {
-  id: string
-  name?: string
-  phases: {
-    uid?: string
-    cadence?: string
-    ordinal?: number
-    pricingType?: string
-  }[]
 }
 
 export interface MembershipCheckout {
@@ -88,12 +146,6 @@ interface DiscountCache {
   promise?: Promise<CatalogDiscount[]>
 }
 
-interface SubscriptionPlanVariationCache {
-  expiresAt: number
-  variations?: CatalogSubscriptionPlanVariation[]
-  promise?: Promise<CatalogSubscriptionPlanVariation[]>
-}
-
 interface AvailabilityCacheEntry {
   expiresAt: number
   slots?: AvailabilitySlot[]
@@ -103,7 +155,6 @@ interface AvailabilityCacheEntry {
 const globalCatalogCache = globalThis as typeof globalThis & {
   __theLabCatalogCacheV5?: CatalogCache
   __theLabDiscountCacheV1?: DiscountCache
-  __theLabSubscriptionPlanVariationCacheV1?: SubscriptionPlanVariationCache
   __theLabAvailabilityCacheV1?: Record<string, AvailabilityCacheEntry>
 }
 
@@ -396,42 +447,6 @@ function transformDiscount(obj: Record<string, unknown>, attributeNamesByToken =
   }
 }
 
-function transformSubscriptionPlanVariation(obj: Record<string, unknown>): CatalogSubscriptionPlanVariation | undefined {
-  const variationData = obj.subscription_plan_variation_data
-  if (obj.type !== 'SUBSCRIPTION_PLAN_VARIATION' || typeof obj.id !== 'string' || !isRecord(variationData)) return undefined
-
-  const phases = Array.isArray(variationData.phases) ? variationData.phases : []
-
-  return {
-    id: obj.id,
-    name: typeof variationData.name === 'string' ? variationData.name : undefined,
-    phases: phases
-      .filter(isRecord)
-      .map((phase) => {
-        const pricing = phase.pricing
-        return {
-          uid: typeof phase.uid === 'string' ? phase.uid : undefined,
-          cadence: typeof phase.cadence === 'string' ? phase.cadence : undefined,
-          ordinal: parseNumericValue(phase.ordinal),
-          pricingType: isRecord(pricing) && typeof pricing.type === 'string' ? pricing.type : undefined,
-        }
-      }),
-  }
-}
-
-function getSubscriptionPlanVariations(obj: Record<string, unknown>) {
-  const directVariation = transformSubscriptionPlanVariation(obj)
-  if (directVariation) return [directVariation]
-
-  const planData = obj.subscription_plan_data
-  if (obj.type !== 'SUBSCRIPTION_PLAN' || !isRecord(planData) || !Array.isArray(planData.subscription_plan_variations)) return []
-
-  return planData.subscription_plan_variations
-    .filter(isRecord)
-    .map(transformSubscriptionPlanVariation)
-    .filter((variation): variation is CatalogSubscriptionPlanVariation => Boolean(variation))
-}
-
 export function hasWebsiteName(item: CatalogItem) {
   return Boolean(item.itemData.websiteCustomAttributes.name)
 }
@@ -556,37 +571,6 @@ export async function validateMembershipCheckout(itemVariationId: string, discou
     currency: priceMoney?.currency ?? 'CAD',
     ...(discount ? { discount } : {}),
     duration,
-  }
-}
-
-export async function fetchCatalogSubscriptionPlanVariations() {
-  const now = Date.now()
-  const cached = globalCatalogCache.__theLabSubscriptionPlanVariationCacheV1
-
-  if (cached?.variations && cached.expiresAt > now) {
-    return cached.variations
-  }
-
-  if (cached?.promise && cached.expiresAt > now) {
-    return cached.promise
-  }
-
-  const promise = fetchFreshCatalogSubscriptionPlanVariations()
-  globalCatalogCache.__theLabSubscriptionPlanVariationCacheV1 = {
-    expiresAt: now + CATALOG_CACHE_TTL_MS,
-    promise,
-  }
-
-  try {
-    const variations = await promise
-    globalCatalogCache.__theLabSubscriptionPlanVariationCacheV1 = {
-      expiresAt: Date.now() + CATALOG_CACHE_TTL_MS,
-      variations,
-    }
-    return variations
-  } catch (err) {
-    globalCatalogCache.__theLabSubscriptionPlanVariationCacheV1 = undefined
-    throw err
   }
 }
 
@@ -730,43 +714,6 @@ async function fetchFreshCatalogDiscounts() {
   } while (cursor)
 
   return discounts
-}
-
-async function fetchFreshCatalogSubscriptionPlanVariations() {
-  const variationsById = new Map<string, CatalogSubscriptionPlanVariation>()
-  let cursor: string | undefined
-
-  do {
-    const res = await squareFetch('/catalog/search', {
-      method: 'POST',
-      body: JSON.stringify({
-        object_types: ['SUBSCRIPTION_PLAN', 'SUBSCRIPTION_PLAN_VARIATION'],
-        include_deleted_objects: false,
-        limit: 100,
-        ...(cursor ? { cursor } : {}),
-      }),
-    })
-
-    if (!res.ok) throw new Error(`Square subscription plans ${res.status}: ${await res.text()}`)
-
-    const data = (await res.json()) as {
-      objects?: Record<string, unknown>[]
-      catalog_object?: Record<string, unknown>[]
-      cursor?: string
-      pagination_token?: string
-    }
-    const objects = data.objects ?? data.catalog_object ?? []
-
-    for (const obj of objects) {
-      for (const variation of getSubscriptionPlanVariations(obj)) {
-        variationsById.set(variation.id, variation)
-      }
-    }
-
-    cursor = data.cursor || data.pagination_token || undefined
-  } while (cursor)
-
-  return Array.from(variationsById.values())
 }
 
 async function fetchCatalogImageUrls(imageIds: string[]) {

@@ -85,6 +85,9 @@ const privateTrainers = [
   },
 ]
 
+const CARD_VERIFICATION_ERROR_MESSAGE =
+  'We could not verify that card. Please check the card number, expiry date, CVV, and postal code, then try again or use a different card.'
+
 function formatPrice(amount: string | undefined, currency: string | undefined) {
   if (!amount) return 'Contact us'
   return formatMoney(parseInt(amount), currency)
@@ -417,29 +420,35 @@ export default function BookingFlow({
     try {
       const prepaidPurchase =
         initialPrepaidPurchase && selectedVariation?.id === initialPrepaidPurchase.variationId ? initialPrepaidPurchase : undefined
-      const shouldCreateSubscription = category === 'memberships' && recurringMembership && selectedVariation
+      const shouldCreateRecurringInvoice = category === 'memberships' && recurringMembership && selectedVariation
       const [givenName, ...familyNameParts] = name.trim().split(/\s+/)
       const price = selectedVariation?.itemVariationData?.priceMoney
       const amountMoney = {
         amount: prepaidPurchase?.totalAmountCents ?? parseInt(price?.amount ?? '0'),
         currency: prepaidPurchase?.currency ?? price?.currency ?? 'CAD',
       }
-      const result = await cardInstance.tokenize(shouldCreateSubscription ? {
-        amount: (amountMoney.amount / 100).toFixed(2),
-        currencyCode: amountMoney.currency,
-        intent: 'STORE',
-        customerInitiated: true,
-        sellerKeyedIn: false,
-        billingContact: {
-          givenName,
-          familyName: familyNameParts.join(' '),
-          email,
-          phone,
-          countryCode: 'CA',
-        },
-      } : undefined)
+      let result: Awaited<ReturnType<SquareCard['tokenize']>>
+      try {
+        result = await cardInstance.tokenize(shouldCreateRecurringInvoice ? {
+          intent: 'STORE',
+          customerInitiated: true,
+          sellerKeyedIn: false,
+          billingContact: {
+            givenName,
+            familyName: familyNameParts.join(' '),
+            email,
+            phone,
+            countryCode: 'CA',
+          },
+        } : undefined)
+      } catch (tokenizeError) {
+        console.error('Square card tokenization error', tokenizeError)
+        setError(CARD_VERIFICATION_ERROR_MESSAGE)
+        setProcessing(false)
+        return
+      }
       if (result.status !== 'OK' || !result.token) {
-        setError(result.errors?.map((e) => e.message).join(', ') ?? 'Card error')
+        setError(CARD_VERIFICATION_ERROR_MESSAGE)
         setProcessing(false)
         return
       }
@@ -464,8 +473,8 @@ export default function BookingFlow({
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
         setConfirmData({ id: data.booking.id, startAt: data.booking.startAt })
-      } else if (shouldCreateSubscription) {
-        const res = await fetch('/api/square/subscription', {
+      } else if (shouldCreateRecurringInvoice) {
+        const res = await fetch('/api/square/invoice', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -479,7 +488,7 @@ export default function BookingFlow({
         })
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
-        setConfirmData({ id: data.subscription?.id ?? data.orderTemplateId })
+        setConfirmData({ id: data.invoice?.id ?? data.orderId })
       } else {
         const res = await fetch('/api/square/payment', {
           method: 'POST',
