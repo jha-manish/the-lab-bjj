@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error('Contact form error:', err)
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Something went wrong' },
+      { error: 'We could not send your message. Please try again in a moment or contact us directly.' },
       { status: 500 }
     )
   }

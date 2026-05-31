@@ -1,7 +1,15 @@
 export const runtime = 'edge'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { squareFetch, LOCATION_ID, findOrCreateCustomer, validateMembershipCheckout } from '@/lib/square'
+import {
+  squareFetch,
+  LOCATION_ID,
+  findOrCreateCustomer,
+  getPublicSquareErrorMessage,
+  getPublicSquareErrorStatus,
+  throwSquareApiError,
+  validateMembershipCheckout,
+} from '@/lib/square'
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,8 +43,9 @@ export async function POST(request: NextRequest) {
       try {
         checkout = await validateMembershipCheckout(itemVariationId, discountId)
       } catch (err) {
+        console.error('Square payment membership validation error:', err)
         return NextResponse.json(
-          { error: err instanceof Error ? err.message : 'Invalid membership checkout' },
+          { error: 'We could not verify that membership selection. Please refresh the page and try again.' },
           { status: 400 }
         )
       }
@@ -67,15 +76,21 @@ export async function POST(request: NextRequest) {
       }),
     })
 
-    if (!payRes.ok) throw new Error(`Payment failed: ${await payRes.text()}`)
+    if (!payRes.ok) {
+      await throwSquareApiError(
+        payRes,
+        'Payment failed',
+        'We could not complete the payment. Please check your card details and try again, or use a different card.'
+      )
+    }
 
     const data = (await payRes.json()) as { payment?: { id: string } }
     return NextResponse.json({ payment: data.payment })
   } catch (err) {
     console.error('Square payment error:', err)
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Payment failed' },
-      { status: 500 }
+      { error: getPublicSquareErrorMessage(err, 'We could not complete the payment. Please try again in a moment or contact us for help.') },
+      { status: getPublicSquareErrorStatus(err) }
     )
   }
 }
