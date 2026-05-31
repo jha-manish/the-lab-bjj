@@ -156,7 +156,6 @@ interface PrepaidMembershipPurchase {
   variationId: string
   discountId: string
   label: string
-  recurrenceLabel: string
   regularAmountCents: number
   totalAmountCents: number
   currency: string
@@ -283,19 +282,16 @@ export default function BookingFlow({
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState('')
   const [confirmData, setConfirmData] = useState<{ id: string; startAt?: string } | null>(null)
-  const [recurringMembership, setRecurringMembership] = useState(true)
 
   const nameInputRef = useRef<HTMLInputElement>(null)
   const emailInputRef = useRef<HTMLInputElement>(null)
   const phoneInputRef = useRef<HTMLInputElement>(null)
-  const recurringMembershipInputRef = useRef<HTMLInputElement>(null)
   const detailsContinueButtonRef = useRef<HTMLButtonElement>(null)
 
   const bookable = category ? CATEGORY_META[category].bookable : false
   const activePrepaidPurchase =
     initialPrepaidPurchase && selectedVariation?.id === initialPrepaidPurchase.variationId ? initialPrepaidPurchase : undefined
   const membershipPurchase = category === 'memberships' && !bookable && !freeTrial
-  const membershipRecurrenceLabel = activePrepaidPurchase?.recurrenceLabel ?? 'monthly'
   const backButtonClass = 'flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-white/10 px-3 py-1.5 rounded-lg transition-colors'
   const categoryBackButton = (
     <button onClick={() => { setStep('category'); setCategory(null); setItems([]) }} className={backButtonClass}>← Back</button>
@@ -420,8 +416,6 @@ export default function BookingFlow({
     try {
       const prepaidPurchase =
         initialPrepaidPurchase && selectedVariation?.id === initialPrepaidPurchase.variationId ? initialPrepaidPurchase : undefined
-      const shouldCreateRecurringInvoice = category === 'memberships' && recurringMembership && selectedVariation
-      const [givenName, ...familyNameParts] = name.trim().split(/\s+/)
       const price = selectedVariation?.itemVariationData?.priceMoney
       const amountMoney = {
         amount: prepaidPurchase?.totalAmountCents ?? parseInt(price?.amount ?? '0'),
@@ -429,18 +423,7 @@ export default function BookingFlow({
       }
       let result: Awaited<ReturnType<SquareCard['tokenize']>>
       try {
-        result = await cardInstance.tokenize(shouldCreateRecurringInvoice ? {
-          intent: 'STORE',
-          customerInitiated: true,
-          sellerKeyedIn: false,
-          billingContact: {
-            givenName,
-            familyName: familyNameParts.join(' '),
-            email,
-            phone,
-            countryCode: 'CA',
-          },
-        } : undefined)
+        result = await cardInstance.tokenize()
       } catch (tokenizeError) {
         console.error('Square card tokenization error', tokenizeError)
         setError(CARD_VERIFICATION_ERROR_MESSAGE)
@@ -473,22 +456,6 @@ export default function BookingFlow({
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
         setConfirmData({ id: data.booking.id, startAt: data.booking.startAt })
-      } else if (shouldCreateRecurringInvoice) {
-        const res = await fetch('/api/square/invoice', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sourceId: result.token,
-            customerName: name,
-            customerEmail: email,
-            customerPhone: phone,
-            itemVariationId: selectedVariation!.id,
-            discountId: prepaidPurchase?.discountId,
-          }),
-        })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error)
-        setConfirmData({ id: data.invoice?.id ?? data.orderId })
       } else {
         const res = await fetch('/api/square/payment', {
           method: 'POST',
@@ -570,18 +537,6 @@ export default function BookingFlow({
     if (event.key !== 'Enter') return
 
     event.preventDefault()
-    if (membershipPurchase && recurringMembershipInputRef.current) {
-      recurringMembershipInputRef.current.focus()
-      return
-    }
-
-    proceedFromDetails()
-  }
-
-  function handleRecurringMembershipKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== 'Enter') return
-
-    event.preventDefault()
     proceedFromDetails()
   }
 
@@ -592,7 +547,6 @@ export default function BookingFlow({
       nameInputRef.current,
       emailInputRef.current,
       phoneInputRef.current,
-      membershipPurchase ? recurringMembershipInputRef.current : null,
       detailsContinueButtonRef.current,
     ].filter((control): control is HTMLInputElement | HTMLButtonElement => Boolean(control && !control.disabled))
 
@@ -945,27 +899,6 @@ export default function BookingFlow({
             />
           </div>
 
-          {membershipPurchase && (
-            <label className="flex gap-3 rounded-xl border border-white/10 bg-zinc-900 p-4 text-sm text-gray-300 cursor-pointer hover:border-teal-500/50 transition-colors">
-              <input
-                ref={recurringMembershipInputRef}
-                type="checkbox"
-                checked={recurringMembership}
-                onChange={(e) => setRecurringMembership(e.target.checked)}
-                onKeyDown={handleRecurringMembershipKeyDown}
-                className="mt-1 size-4 accent-teal-500"
-              />
-              <span>
-                <span className="block font-semibold text-white">Make this membership recur {membershipRecurrenceLabel}</span>
-                <span className="block text-gray-400">
-                  {recurringMembership
-                    ? `Your card will be billed ${membershipRecurrenceLabel} until you cancel.`
-                    : 'This will be a one-time payment and will not renew automatically.'}
-                </span>
-              </span>
-            </label>
-          )}
-
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <button
             ref={detailsContinueButtonRef}
@@ -1008,9 +941,6 @@ export default function BookingFlow({
                 <span className="text-gray-500 line-through">{formatMoney(activePrepaidPurchase.regularAmountCents, activePrepaidPurchase.currency)}</span>
               </div>
             )}
-            {membershipPurchase && recurringMembership && (
-              <div className="mt-1 text-xs text-gray-400">Renews {membershipRecurrenceLabel} until cancelled.</div>
-            )}
           </div>
           <span className="font-black text-teal-400 text-base">
             {formatMoney(paymentAmountCents, paymentCurrency)}
@@ -1049,14 +979,12 @@ export default function BookingFlow({
       <div className="flex flex-col items-center gap-6 py-8 text-center">
         <div className="w-16 h-16 rounded-full bg-teal-500/20 flex items-center justify-center text-3xl">✓</div>
         <h2 className="text-3xl font-black">
-          {bookable ? 'Booking Confirmed!' : membershipPurchase && recurringMembership ? 'Membership Started!' : 'Order Confirmed!'}
+          {bookable ? 'Booking Confirmed!' : 'Order Confirmed!'}
         </h2>
         <p className="text-gray-400 max-w-sm">
           {bookable
             ? `You're booked for ${selectedItem?.itemData?.name}${selectedSlot ? ` on ${new Date(selectedSlot.startAt).toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' })} at ${formatTime(selectedSlot.startAt)}` : ''}. We'll email a confirmation to ${email}.`
-            : membershipPurchase && recurringMembership
-              ? `Your ${getMembershipPlanName(selectedItem, activePrepaidPurchase)} recurring membership is set up. Square will email invoices and receipts to ${email}.`
-              : `Your order is confirmed. We'll email a receipt to ${email}.`}
+            : `Your order is confirmed. We'll email a receipt to ${email}.`}
         </p>
         {confirmData?.id && (
           <p className="text-gray-500 text-xs">Reference: {confirmData.id}</p>
