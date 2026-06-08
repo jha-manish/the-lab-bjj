@@ -57,9 +57,12 @@ export default function ContactPage() {
               ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">Full Name *</label>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">Full name</label>
                     <input
                       type="text"
+                      name="name"
+                      autoComplete="name"
+                      autoCapitalize="words"
                       required
                       value={form.name}
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -68,9 +71,12 @@ export default function ContactPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">Email *</label>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">Email</label>
                     <input
                       type="email"
+                      name="email"
+                      autoComplete="email"
+                      autoCapitalize="none"
                       required
                       value={form.email}
                       onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
@@ -82,6 +88,9 @@ export default function ContactPage() {
                     <label className="block text-sm font-semibold text-gray-300 mb-2">Phone</label>
                     <input
                       type="tel"
+                      name="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
                       value={form.phone}
                       onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                       placeholder="+1 (519) 555-0100"
@@ -89,8 +98,9 @@ export default function ContactPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">Message *</label>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">Message</label>
                     <textarea
+                      name="message"
                       required
                       rows={5}
                       value={form.message}

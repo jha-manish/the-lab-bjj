@@ -855,11 +855,13 @@ export default function BookingFlow({
         <div onKeyDown={handleDetailsKeyboardLoop} className="flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold mb-2">Full Name *</label>
+              <label className="block text-sm font-semibold mb-2">Full name</label>
               <input
                 ref={nameInputRef}
                 required
                 type="text"
+                name="name"
+                autoComplete="name"
                 autoCapitalize="words"
                 value={name}
                 onChange={(e) => setName(formatNameInput(e.target.value))}
@@ -869,11 +871,13 @@ export default function BookingFlow({
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2">Email *</label>
+              <label className="block text-sm font-semibold mb-2">Email</label>
               <input
                 ref={emailInputRef}
                 required
                 type="email"
+                name="email"
+                autoComplete="email"
                 autoCapitalize="none"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -884,11 +888,12 @@ export default function BookingFlow({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-2">Phone *</label>
+            <label className="block text-sm font-semibold mb-2">Phone</label>
             <input
               ref={phoneInputRef}
               required
               type="tel"
+              name="tel"
               inputMode="tel"
               autoComplete="tel"
               value={phone}
