@@ -409,6 +409,8 @@ export default function ClassBookingWidget() {
                 <input
                   ref={nameInputRef}
                   type="text"
+                  name="name"
+                  autoComplete="name"
                   autoCapitalize="words"
                   placeholder="Jane Smith"
                   value={form.name}
@@ -422,6 +424,8 @@ export default function ClassBookingWidget() {
                 <input
                   ref={emailInputRef}
                   type="email"
+                  name="email"
+                  autoComplete="email"
                   autoCapitalize="none"
                   placeholder="jane@example.com"
                   value={form.email}
@@ -435,6 +439,7 @@ export default function ClassBookingWidget() {
                 <input
                   ref={phoneInputRef}
                   type="tel"
+                  name="tel"
                   inputMode="tel"
                   autoComplete="tel"
                   placeholder="(226) 555-0100"
