@@ -3,6 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import FloatingContact from "@/components/FloatingContact";
 
 const BASE_URL = 'https://labjiujitsu.com'
 
@@ -72,6 +73,7 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1 pt-16">{children}</main>
         <Footer />
+        <FloatingContact />
 
         {/* Local Business structured data */}
         <Script id="local-business-jsonld" type="application/ld+json">{`
