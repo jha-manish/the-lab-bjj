@@ -83,10 +83,10 @@ export default function Home() {
               </a>
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link href="/book" className="bg-teal-500 hover:bg-teal-400 text-black font-black px-8 py-4 rounded text-lg transition-colors">
+              <Link href="/book" data-cta="book_free_trial" data-cta-location="home_hero" className="bg-teal-500 hover:bg-teal-400 text-black font-black px-8 py-4 rounded text-lg transition-colors">
                 BOOK YOUR FREE TRIAL
               </Link>
-              <Link href="/memberships" className="border border-white/30 bg-black/20 hover:bg-white/10 hover:border-white text-white font-semibold px-8 py-4 rounded text-lg transition-colors">
+              <Link href="/memberships" data-cta="view_programs" data-cta-location="home_hero" className="border border-white/30 bg-black/20 hover:bg-white/10 hover:border-white text-white font-semibold px-8 py-4 rounded text-lg transition-colors">
                 View Programs
               </Link>
             </div>
@@ -202,7 +202,7 @@ export default function Home() {
             <h2 className="text-3xl font-black text-black">Your first week is free.</h2>
             <p className="text-black/70 mt-1">No commitment. No signup fees. Just come roll.</p>
           </div>
-          <Link href="/book" className="bg-black hover:bg-zinc-800 text-white font-black px-8 py-4 rounded text-lg transition-colors whitespace-nowrap">
+          <Link href="/book" data-cta="book_free_trial" data-cta-location="home_cta_banner" className="bg-black hover:bg-zinc-800 text-white font-black px-8 py-4 rounded text-lg transition-colors whitespace-nowrap">
             BOOK FREE TRIAL →
           </Link>
         </div>

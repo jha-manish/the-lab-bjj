@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import BookingFlow from '@/components/BookingFlow'
+import PricingView from '@/components/analytics/PricingView'
 import { fetchCatalogDiscounts, fetchCatalogItems, isWebsiteMembershipItem, type CatalogDiscount } from '@/lib/square'
 
 export const runtime = 'edge'
@@ -285,6 +286,16 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
 
   return (
     <>
+      <PricingView
+        listName="memberships"
+        items={memberships.map((m) => ({
+          item_id: m.variationId,
+          item_name: m.name,
+          item_category: 'memberships',
+          price: m.priceCents / 100,
+          quantity: 1,
+        }))}
+      />
       <section className="bg-zinc-950 py-20">
         <div className="max-w-6xl mx-auto px-4">
           <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">Join The Lab</p>
@@ -299,7 +310,7 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
               <p className="text-xl font-bold mb-1">🎁 First Week Free</p>
               <p className="text-gray-400 text-sm">No credit card required. Just show up and roll.</p>
             </div>
-            <Link href="/book" className="shrink-0 bg-teal-500 hover:bg-teal-400 text-black font-bold px-6 py-3 rounded transition-colors whitespace-nowrap">
+            <Link href="/book" data-cta="book_free_trial" data-cta-location="memberships_trial_banner" className="shrink-0 bg-teal-500 hover:bg-teal-400 text-black font-bold px-6 py-3 rounded transition-colors whitespace-nowrap">
               Book Your Free Trial →
             </Link>
           </div>
@@ -345,6 +356,8 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
                 <div className="bg-zinc-900 px-6 pb-6 pt-4 border-t border-white/5">
                   <Link
                     href={getMembershipHref(m)}
+                    data-cta="select_membership"
+                    data-cta-location={`memberships_card:${m.name}`}
                     className={`block text-center font-black text-sm px-4 py-3 rounded transition-colors ${
                       m.highlight
                         ? 'bg-teal-500 hover:bg-teal-400 text-black'
@@ -434,7 +447,7 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
             <h2 className="text-3xl font-black text-black">Not sure where to start?</h2>
             <p className="text-black/70 mt-1">Book a free trial and we&apos;ll match you to the right class.</p>
           </div>
-          <Link href="/book" className="bg-black hover:bg-zinc-800 text-white font-black px-8 py-4 rounded text-lg transition-colors whitespace-nowrap">
+          <Link href="/book" data-cta="book_free_trial" data-cta-location="memberships_cta_banner" className="bg-black hover:bg-zinc-800 text-white font-black px-8 py-4 rounded text-lg transition-colors whitespace-nowrap">
             BOOK FREE TRIAL →
           </Link>
         </div>

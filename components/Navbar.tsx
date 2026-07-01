@@ -30,7 +30,7 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
-          <Link href="/book" className="bg-teal-500 hover:bg-teal-400 text-black font-bold text-sm px-4 py-2 rounded transition-colors">
+          <Link href="/book" data-cta="book_free_trial" data-cta-location="navbar" className="bg-teal-500 hover:bg-teal-400 text-black font-bold text-sm px-4 py-2 rounded transition-colors">
             Free Trial
           </Link>
         </div>
@@ -51,7 +51,7 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
-          <Link href="/book" className="bg-teal-500 text-black font-bold px-4 py-2 rounded text-center" onClick={() => setOpen(false)}>
+          <Link href="/book" data-cta="book_free_trial" data-cta-location="navbar_mobile" className="bg-teal-500 text-black font-bold px-4 py-2 rounded text-center" onClick={() => setOpen(false)}>
             Free Trial
           </Link>
         </div>

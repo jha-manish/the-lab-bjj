@@ -3,6 +3,8 @@ import Script from "next/script";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Analytics from "@/components/analytics/Analytics";
+import AnalyticsScripts, { AnalyticsNoScript } from "@/components/analytics/AnalyticsScripts";
 
 const BASE_URL = 'https://labjiujitsu.com'
 
@@ -69,9 +71,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-zinc-950 text-white">
+        {/* Marketing/analytics: GTM + Meta <noscript> fallbacks first in <body> */}
+        <AnalyticsNoScript />
         <Navbar />
         <main className="flex-1 pt-16">{children}</main>
         <Footer />
+
+        {/* Analytics runtime — page views, engagement, clicks, errors. */}
+        <Analytics />
 
         {/* Local Business structured data */}
         <Script id="local-business-jsonld" type="application/ld+json">{`
@@ -115,13 +122,9 @@ export default function RootLayout({
           }
         `}</Script>
 
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-PHS0NYH28S" strategy="afterInteractive" />
-        <Script id="gtag-init" strategy="afterInteractive">{`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-PHS0NYH28S');
-        `}</Script>
+        {/* Marketing platform loaders (GTM, GA4, Meta Pixel). Tracking is
+            issued through lib/analytics — no raw vendor calls live here. */}
+        <AnalyticsScripts />
       </body>
     </html>
   );

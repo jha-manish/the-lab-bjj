@@ -4,6 +4,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
+import {
+  trackCheckoutStarted,
+  trackPurchase,
+  trackPurchaseFailed,
+  trackTrialSubmitted,
+  trackTrialFailed,
+  type AnalyticsItem,
+} from '@/lib/analytics'
 
 declare global {
   interface Window {
@@ -409,6 +417,27 @@ export default function BookingFlow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
 
+  // Builds GA4/Meta ecommerce payload from the current selection. Values are in
+  // major currency units (dollars), since GA4 `value` expects major units while
+  // Square works in cents.
+  function buildCheckoutPayload() {
+    const price = selectedVariation?.itemVariationData?.priceMoney
+    const cents = activePrepaidPurchase?.totalAmountCents ?? parseInt(price?.amount ?? '0')
+    const currency = activePrepaidPurchase?.currency ?? price?.currency ?? 'CAD'
+    const plan = getMembershipPlanName(selectedItem, activePrepaidPurchase) ?? selectedItem?.itemData?.name ?? undefined
+    const items: AnalyticsItem[] | undefined = selectedItem
+      ? [{
+          item_id: selectedVariation?.id,
+          item_name: selectedItem.itemData?.name,
+          item_category: category ?? undefined,
+          item_variant: activePrepaidPurchase?.label ?? selectedVariation?.itemVariationData?.name,
+          price: cents / 100,
+          quantity: 1,
+        }]
+      : undefined
+    return { value: cents / 100, currency, membershipPlan: plan, items }
+  }
+
   async function handlePay() {
     if (!cardInstance) return
     setError('')
@@ -456,6 +485,15 @@ export default function BookingFlow({
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
         setConfirmData({ id: data.booking.id, startAt: data.booking.startAt })
+        // SECONDARY conversion: paid booking confirmed by Square.
+        const checkout = buildCheckoutPayload()
+        trackPurchase({
+          transactionId: data.booking.id,
+          value: amountMoney.amount / 100,
+          currency: amountMoney.currency,
+          membershipPlan: checkout.membershipPlan,
+          items: checkout.items,
+        })
       } else {
         const res = await fetch('/api/square/payment', {
           method: 'POST',
@@ -477,11 +515,23 @@ export default function BookingFlow({
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
         setConfirmData({ id: data.payment.id })
+        // SECONDARY conversion: online membership/merch payment succeeded.
+        const checkout = buildCheckoutPayload()
+        trackPurchase({
+          transactionId: data.payment.id,
+          value: checkout.value,
+          currency: checkout.currency,
+          membershipPlan: checkout.membershipPlan,
+          items: checkout.items,
+        })
       }
 
       setStep('confirm')
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Payment failed')
+      const message = e instanceof Error ? e.message : 'Payment failed'
+      setError(message)
+      const checkout = buildCheckoutPayload()
+      trackPurchaseFailed({ message, value: checkout.value, membershipPlan: checkout.membershipPlan })
     } finally {
       setProcessing(false)
     }
@@ -509,8 +559,18 @@ export default function BookingFlow({
       if (!res.ok) throw new Error(data.error)
       setConfirmData({ id: data.booking.id, startAt: data.booking.startAt })
       setStep('confirm')
+      // A free (no-payment) booking is a lead — PRIMARY conversion.
+      if (freeTrial) {
+        trackTrialSubmitted({
+          bookingId: data.booking.id,
+          className: selectedItem?.itemData?.name,
+          startAt: data.booking.startAt,
+        })
+      }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Booking failed')
+      const message = e instanceof Error ? e.message : 'Booking failed'
+      setError(message)
+      if (freeTrial) trackTrialFailed({ message, className: selectedItem?.itemData?.name })
     } finally {
       setProcessing(false)
     }
@@ -523,6 +583,8 @@ export default function BookingFlow({
       return
     }
 
+    // Purchase funnel: visitor advanced to the payment step.
+    trackCheckoutStarted(buildCheckoutPayload())
     setStep('payment')
   }
 

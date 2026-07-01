@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { trackError } from '@/lib/analytics'
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
@@ -23,8 +24,11 @@ export default function ContactPage() {
       if (!res.ok) throw new Error(data.error || 'Something went wrong')
       setStatus('success')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      const message = err instanceof Error ? err.message : 'Something went wrong'
+      setError(message)
       setStatus('error')
+      // Error tracking: failed form submission.
+      trackError({ description: message, fatal: false, context: 'contact_form' })
     }
   }
 
@@ -132,6 +136,8 @@ export default function ContactPage() {
                 <p className="text-gray-400 text-sm mb-4">Skip the form — book your free trial and we&apos;ll connect on the mat.</p>
                 <Link
                   href="/book"
+                  data-cta="book_free_trial"
+                  data-cta-location="contact"
                   className="inline-block bg-teal-500 hover:bg-teal-400 text-black font-black px-6 py-3 rounded transition-colors text-sm"
                 >
                   Book Free Trial →

@@ -15,7 +15,7 @@ export default function Footer() {
             <Link href="/memberships" className="hover:text-white transition-colors">Memberships</Link>
             <Link href="/schedule" className="hover:text-white transition-colors">Schedule</Link>
             <Link href="/about" className="hover:text-white transition-colors">About</Link>
-            <Link href="/book" className="hover:text-white transition-colors">Book Free Trial</Link>
+            <Link href="/book" data-cta="book_free_trial" data-cta-location="footer" className="hover:text-white transition-colors">Book Free Trial</Link>
             <Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link>
           </div>
         </div>

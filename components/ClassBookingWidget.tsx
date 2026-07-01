@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import type { KeyboardEvent } from 'react'
 import { TRIAL_CLASSES, type TrialClass } from '@/lib/trial-classes'
+import { trackTrialPageView, trackTrialStarted, trackTrialSubmitted, trackTrialFailed } from '@/lib/analytics'
 
 const LEVEL_COLORS: Record<string, string> = {
   'Beginners':  'bg-green-500/20 text-green-400 border-green-500/30',
@@ -109,6 +110,11 @@ export default function ClassBookingWidget() {
 
   const weekLabel = `${labelDate(dates[0]).month} ${labelDate(dates[0]).day} - ${labelDate(dates[dates.length - 1]).month} ${labelDate(dates[dates.length - 1]).day}`
 
+  // Funnel stage 1: the Free Trial booking widget was viewed.
+  useEffect(() => {
+    trackTrialPageView()
+  }, [])
+
   // Keep a rolling 3-week window warm so advancing a week preloads the next one.
   useEffect(() => {
     const params = new URLSearchParams()
@@ -161,6 +167,8 @@ export default function ClassBookingWidget() {
     setSelectedSlot(slot)
     setStep('details')
     scrollToStep()
+    // Funnel stage 3: visitor reached the details form (started the signup).
+    trackTrialStarted({ className: selectedClass?.name, classLevel: selectedClass?.level })
   }
 
   function handleDetailsFieldKeyDown(event: KeyboardEvent<HTMLInputElement>, nextControl: HTMLInputElement | HTMLButtonElement | null) {
@@ -230,8 +238,19 @@ export default function ClassBookingWidget() {
       setConfirmedBooking({ id: data.booking!.id, startAt: selectedSlot.startAt })
       setStep('confirm')
       scrollToStep()
+      // Funnel stage 4 (success): PRIMARY conversion. Deduped by booking ID so
+      // a re-render or retry cannot double count.
+      trackTrialSubmitted({
+        bookingId: data.booking!.id,
+        className: selectedClass.name,
+        classLevel: selectedClass.level,
+        startAt: selectedSlot.startAt,
+      })
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : 'Something went wrong')
+      const message = e instanceof Error ? e.message : 'Something went wrong'
+      setSubmitError(message)
+      // Funnel stage 4 (failure): trial submission failed.
+      trackTrialFailed({ message, className: selectedClass.name, classLevel: selectedClass.level })
     } finally {
       setSubmitting(false)
     }
