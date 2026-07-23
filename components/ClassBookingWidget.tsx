@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import type { KeyboardEvent } from 'react'
 import { TRIAL_CLASSES, type TrialClass } from '@/lib/trial-classes'
-import { trackMetaLead } from '@/components/MetaPixel'
+import { trackMetaLead } from '@/lib/meta-pixel'
 
 const LEVEL_COLORS: Record<string, string> = {
   'Beginners':  'bg-green-500/20 text-green-400 border-green-500/30',
