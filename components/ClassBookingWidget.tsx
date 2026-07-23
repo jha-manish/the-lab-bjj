@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import type { KeyboardEvent } from 'react'
 import { TRIAL_CLASSES, type TrialClass } from '@/lib/trial-classes'
+import { trackMetaLead } from '@/components/MetaPixel'
 
 const LEVEL_COLORS: Record<string, string> = {
   'Beginners':  'bg-green-500/20 text-green-400 border-green-500/30',
@@ -229,6 +230,10 @@ export default function ClassBookingWidget() {
       if (!res.ok || data.error) throw new Error(data.error ?? 'Booking failed')
       setConfirmedBooking({ id: data.booking!.id, startAt: selectedSlot.startAt })
       setStep('confirm')
+      trackMetaLead({
+        bookingId: data.booking!.id,
+        className: selectedClass.name,
+      })
       scrollToStep()
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : 'Something went wrong')
