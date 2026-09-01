@@ -1,14 +1,13 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import type { Metadata } from 'next'
 import InstagramFeed from '@/components/InstagramFeed'
+import { pageMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'About | The Jiu-Jitsu Lab Waterloo',
+export const metadata = pageMetadata({
+  title: 'About',
   description: 'Meet the coaching staff at The Jiu-Jitsu Lab in Waterloo, ON. Led by Head Coach Brandon Twaddle, IBJJF No-Gi World Silver Medalist, and a team of world-level competitors.',
-  alternates: { canonical: 'https://labjiujitsu.com/about' },
-  openGraph: { url: 'https://labjiujitsu.com/about' },
-}
+  path: '/about',
+})
 
 const coaches = [
   {

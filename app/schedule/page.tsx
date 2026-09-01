@@ -1,12 +1,11 @@
 import Link from 'next/link'
-import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Class Schedule | The Jiu-Jitsu Lab Waterloo',
+export const metadata = pageMetadata({
+  title: 'Class Schedule',
   description: 'BJJ class schedule in Waterloo, ON. Morning, evening, and weekend classes. Gi, No-Gi, Kids, Women\'s, and Open Mat.',
-  alternates: { canonical: 'https://labjiujitsu.com/schedule' },
-  openGraph: { url: 'https://labjiujitsu.com/schedule' },
-}
+  path: '/schedule',
+})
 
 const kids = { time: '5:00 PM', name: 'Kids Class', level: 'Ages 5–15' }
 const adultGi = { time: '6:00 PM', name: 'Adult Gi', level: 'All Levels' }

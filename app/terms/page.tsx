@@ -1,9 +1,10 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Terms of Service | The Jiu-Jitsu Lab',
+export const metadata = pageMetadata({
+  title: 'Terms of Service',
   description: 'Terms of service for The Jiu-Jitsu Lab — rules, liability, memberships, and your agreement with us.',
-}
+  path: '/terms',
+})
 
 export default function TermsOfService() {
   return (

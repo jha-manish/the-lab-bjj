@@ -1,14 +1,14 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import type { Metadata } from 'next'
 import InstagramFeed from '@/components/InstagramFeed'
+import { pageMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: 'The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON',
+  socialTitle: 'The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON',
   description: "Waterloo's dedicated BJJ academy. Est. 1998. Led by IBJJF No-Gi World Silver Medalist Brandon Twaddle and a world-class coaching staff. Gi, No-Gi, Kids, Women's & Competition. First week free.",
-  alternates: { canonical: 'https://labjiujitsu.com' },
-  openGraph: { url: 'https://labjiujitsu.com' },
-}
+  path: '/',
+})
 
 const programs = [
   { title: 'Gi & No-Gi BJJ', desc: 'For adults of all levels. Traditional and modern grappling taught by world-level competitors. Morning and evening classes available.' },

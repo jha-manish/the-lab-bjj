@@ -1,18 +1,17 @@
 import Link from 'next/link'
-import type { Metadata } from 'next'
 import BookingFlow from '@/components/BookingFlow'
 import SubscriptionSignup from '@/components/SubscriptionSignup'
 import { fetchCatalogDiscounts, fetchCatalogItems, fetchSubscriptionPlans, isWebsiteMembershipItem, type CatalogDiscount } from '@/lib/square'
+import { pageMetadata } from '@/lib/seo'
 
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Memberships | The Jiu-Jitsu Lab Waterloo',
+export const metadata = pageMetadata({
+  title: 'Memberships',
   description: 'BJJ memberships in Waterloo, ON. Adult unlimited from $135/month. Student and Kids rates available. First week free — no commitment.',
-  alternates: { canonical: 'https://labjiujitsu.com/memberships' },
-  openGraph: { url: 'https://labjiujitsu.com/memberships' },
-}
+  path: '/memberships',
+})
 
 const PREPAID_MEMBERSHIP_DISCOUNT_RE = /^(\d+)\s+(day|week|month|year)s?\s+pre-paid membership$/i
 const DAYS_PER_MONTH = 365.2425 / 12

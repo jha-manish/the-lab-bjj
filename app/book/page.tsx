@@ -1,12 +1,11 @@
-import type { Metadata } from 'next'
 import ClassBookingWidget from '@/components/ClassBookingWidget'
+import { pageMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Book a Free Trial | The Jiu-Jitsu Lab Waterloo',
+export const metadata = pageMetadata({
+  title: 'Book a Free Trial',
   description: 'Book a free drop-in class at The Jiu-Jitsu Lab in Waterloo, ON. All levels welcome. No commitment required.',
-  alternates: { canonical: 'https://labjiujitsu.com/book' },
-  openGraph: { url: 'https://labjiujitsu.com/book' },
-}
+  path: '/book',
+})
 
 export default function BookPage() {
   return (
