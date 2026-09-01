@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import type { KeyboardEvent } from 'react'
 import { TRIAL_CLASSES, type TrialClass } from '@/lib/trial-classes'
 import { trackMetaLead } from '@/lib/meta-pixel'
+import { getStoredAttribution } from '@/lib/attribution'
 
 const LEVEL_COLORS: Record<string, string> = {
   'Beginners':  'bg-green-500/20 text-green-400 border-green-500/30',
@@ -224,6 +225,7 @@ export default function ClassBookingWidget() {
           customerName: form.name,
           customerEmail: form.email,
           customerPhone: form.phone,
+          attribution: getStoredAttribution(),
         }),
       })
       const data = (await res.json()) as { booking?: { id: string; startAt?: string }; error?: string }

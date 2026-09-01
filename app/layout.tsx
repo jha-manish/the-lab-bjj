@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import FloatingContact from "@/components/FloatingContact";
 import MetaPixel from "@/components/MetaPixel";
 import { META_PIXEL_ID } from "@/lib/meta-pixel";
+import AttributionCapture from "@/components/AttributionCapture";
 
 const BASE_URL = 'https://labjiujitsu.com'
 
@@ -101,6 +102,7 @@ export default function RootLayout({
             src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
           />
         </noscript>
+        <AttributionCapture />
         <Navbar />
         <main className="flex-1 pt-16">{children}</main>
         <Footer />

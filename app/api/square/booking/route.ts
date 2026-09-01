@@ -10,6 +10,7 @@ import {
   throwSquareApiError,
   transformBooking,
 } from '@/lib/square'
+import { formatAttribution, type Attribution } from '@/lib/attribution'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest) {
       customerPhone: string
       sourceId?: string
       amountMoney?: { amount: number; currency: string }
+      attribution?: Attribution | null
     }
 
     const {
@@ -35,6 +37,7 @@ export async function POST(request: NextRequest) {
       customerPhone,
       sourceId,
       amountMoney,
+      attribution,
     } = body
 
     const customerId = await findOrCreateCustomer(customerEmail, customerName, customerPhone)
@@ -49,6 +52,7 @@ export async function POST(request: NextRequest) {
           start_at: startAt,
           customer_id: customerId,
           customer_note: 'Booked via The Jiu-Jitsu Lab website',
+          seller_note: formatAttribution(attribution ?? null),
           appointment_segments: [
             {
               service_variation_id: serviceVariationId,
