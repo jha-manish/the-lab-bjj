@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import BookingFlow from '@/components/BookingFlow'
-import { fetchCatalogDiscounts, fetchCatalogItems, isWebsiteMembershipItem, type CatalogDiscount } from '@/lib/square'
+import SubscriptionSignup from '@/components/SubscriptionSignup'
+import { fetchCatalogDiscounts, fetchCatalogItems, fetchSubscriptionPlans, isWebsiteMembershipItem, type CatalogDiscount } from '@/lib/square'
 
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
@@ -201,6 +202,15 @@ async function getCatalogDiscounts() {
   }
 }
 
+async function getSubscriptionPlans() {
+  try {
+    return await fetchSubscriptionPlans()
+  } catch (err) {
+    console.error('Square subscription plans error:', err)
+    return []
+  }
+}
+
 const extras = [
   {
     title: 'Drop-In',
@@ -220,7 +230,11 @@ const extras = [
 
 export default async function MembershipsPage({ searchParams }: MembershipsPageProps) {
   const params = await searchParams
-  const [catalogItems, catalogDiscounts] = await Promise.all([getCatalogItems(), getCatalogDiscounts()])
+  const [catalogItems, catalogDiscounts, subscriptionPlans] = await Promise.all([
+    getCatalogItems(),
+    getCatalogDiscounts(),
+    getSubscriptionPlans(),
+  ])
   const flowCategory = getFlowCategory(params?.category, params)
   const memberships = catalogItems ? getMemberships(catalogItems) : []
   const prepaidDiscounts = getPrepaidMembershipDiscounts(catalogDiscounts)
@@ -403,6 +417,16 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Subscriptions — recurring billing, separate from the one-time membership items above */}
+          <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">Auto-Billed</p>
+          <h2 className="text-4xl font-black mb-3">Subscriptions</h2>
+          <p className="text-gray-400 max-w-2xl mb-10 leading-relaxed">
+            Save your card once — we&apos;ll bill you automatically each cycle, no need to pay manually every month.
+          </p>
+          <div className="mb-20">
+            <SubscriptionSignup plans={subscriptionPlans} />
           </div>
 
           {/* Drop-in & Private */}

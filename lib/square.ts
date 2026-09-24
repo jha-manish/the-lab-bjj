@@ -871,3 +871,129 @@ export async function findOrCreateCustomer(
 
   return undefined
 }
+
+// ── Square Subscriptions (recurring billing) ──────────────────────────────
+// Separate from the one-time/manual membership catalog items above. Plan
+// variations are created by hand in the Square Dashboard/Catalog; this just
+// reads them and lets a customer subscribe with a card on file.
+
+export interface SubscriptionPlanPhase {
+  cadence: string
+  periods?: number
+  priceCents: number
+  currency: string
+}
+
+export interface SubscriptionPlanVariation {
+  id: string
+  version: string
+  name: string
+  planId?: string
+  planName?: string
+  phases: SubscriptionPlanPhase[]
+}
+
+export async function fetchSubscriptionPlans(): Promise<SubscriptionPlanVariation[]> {
+  const res = await squareFetch('/catalog/search', {
+    method: 'POST',
+    body: JSON.stringify({
+      object_types: ['SUBSCRIPTION_PLAN_VARIATION'],
+      include_related_objects: true,
+    }),
+  })
+
+  if (!res.ok) throw new Error(`Square subscription plans ${res.status}: ${await res.text()}`)
+
+  const data = (await res.json()) as {
+    objects?: Record<string, unknown>[]
+    related_objects?: Record<string, unknown>[]
+  }
+
+  const planNameById = new Map<string, string>()
+  for (const obj of data.related_objects ?? []) {
+    if (obj.type !== 'SUBSCRIPTION_PLAN') continue
+    const planData = (obj.subscription_plan_data ?? {}) as Record<string, unknown>
+    if (typeof planData.name === 'string') planNameById.set(obj.id as string, planData.name)
+  }
+
+  return (data.objects ?? [])
+    .filter((obj) => obj.type === 'SUBSCRIPTION_PLAN_VARIATION')
+    .map((obj) => {
+      const d = (obj.subscription_plan_variation_data ?? {}) as Record<string, unknown>
+      const planId = d.subscription_plan_id as string | undefined
+      const rawPhases = (d.phases ?? []) as Record<string, unknown>[]
+
+      const phases: SubscriptionPlanPhase[] = rawPhases.map((p) => {
+        const price = p.recurring_price_money as Record<string, unknown> | undefined
+        return {
+          cadence: p.cadence as string,
+          periods: p.periods != null ? Number(p.periods) : undefined,
+          priceCents: price ? Number(price.amount) : 0,
+          currency: (price?.currency as string) ?? 'CAD',
+        }
+      })
+
+      return {
+        id: obj.id as string,
+        version: String(obj.version ?? ''),
+        name: d.name as string,
+        planId,
+        planName: planId ? planNameById.get(planId) : undefined,
+        phases,
+      }
+    })
+}
+
+/** Saves a tokenized card (from the Web Payments SDK) to a customer's profile. Returns the new card_id. */
+export async function saveCardOnFile(customerId: string, sourceId: string): Promise<string> {
+  const res = await squareFetch('/cards', {
+    method: 'POST',
+    body: JSON.stringify({
+      idempotency_key: crypto.randomUUID(),
+      source_id: sourceId,
+      card: { customer_id: customerId },
+    }),
+  })
+
+  if (!res.ok) {
+    await throwSquareApiError(
+      res,
+      'Save card failed',
+      'We could not save your card. Please check your card details and try again.'
+    )
+  }
+
+  const data = (await res.json()) as { card?: { id: string } }
+  if (!data.card) throw new Error('No card returned')
+  return data.card.id
+}
+
+/** Creates a recurring Subscription for a customer against a plan variation, billed to a saved card. */
+export async function createSquareSubscription(params: {
+  customerId: string
+  planVariationId: string
+  cardId: string
+}): Promise<{ id: string; status?: string }> {
+  const res = await squareFetch('/subscriptions', {
+    method: 'POST',
+    body: JSON.stringify({
+      idempotency_key: crypto.randomUUID(),
+      location_id: LOCATION_ID,
+      plan_variation_id: params.planVariationId,
+      customer_id: params.customerId,
+      card_id: params.cardId,
+    }),
+  })
+
+  if (!res.ok) {
+    await throwSquareApiError(
+      res,
+      'Create subscription failed',
+      'We could not set up your subscription. Please try again or contact us for help.'
+    )
+  }
+
+  const data = (await res.json()) as { subscription?: { id: string; status?: string } }
+  if (!data.subscription) throw new Error('No subscription returned')
+  return data.subscription
+}
