@@ -878,8 +878,10 @@ export async function findOrCreateCustomer(
 // reads them and lets a customer subscribe with a card on file.
 
 export interface SubscriptionPlanPhase {
+  uid: string
   cadence: string
   periods?: number
+  pricingType: 'STATIC' | 'RELATIVE'
   priceCents: number
   currency: string
 }
@@ -890,58 +892,114 @@ export interface SubscriptionPlanVariation {
   name: string
   planId?: string
   planName?: string
+  /** Catalog item variation whose price drives RELATIVE-priced phases */
+  itemVariationId?: string
   phases: SubscriptionPlanPhase[]
+}
+
+interface Money {
+  amount?: number | string
+  currency?: string
+}
+
+function readMoney(value: unknown): Money | undefined {
+  return isRecord(value) ? (value as Money) : undefined
 }
 
 export async function fetchSubscriptionPlans(): Promise<SubscriptionPlanVariation[]> {
   const res = await squareFetch('/catalog/search', {
     method: 'POST',
-    body: JSON.stringify({
-      object_types: ['SUBSCRIPTION_PLAN_VARIATION'],
-      include_related_objects: true,
-    }),
+    body: JSON.stringify({ object_types: ['SUBSCRIPTION_PLAN'] }),
   })
 
   if (!res.ok) throw new Error(`Square subscription plans ${res.status}: ${await res.text()}`)
 
-  const data = (await res.json()) as {
-    objects?: Record<string, unknown>[]
-    related_objects?: Record<string, unknown>[]
+  const data = (await res.json()) as { objects?: Record<string, unknown>[] }
+  const plans = (data.objects ?? []).filter((obj) => obj.type === 'SUBSCRIPTION_PLAN' && !obj.is_deleted)
+
+  // RELATIVE-priced phases take their price from the catalog item the plan is attached to.
+  const itemIds = Array.from(
+    new Set(
+      plans.flatMap((plan) => {
+        const d = (plan.subscription_plan_data ?? {}) as Record<string, unknown>
+        return Array.isArray(d.eligible_item_ids) ? (d.eligible_item_ids as string[]) : []
+      })
+    )
+  )
+
+  const variationByItemId = new Map<string, { id: string; amount: number; currency: string }>()
+  if (itemIds.length > 0) {
+    const itemsRes = await squareFetch('/catalog/batch-retrieve', {
+      method: 'POST',
+      body: JSON.stringify({ object_ids: itemIds }),
+    })
+    if (!itemsRes.ok) throw new Error(`Square subscription items ${itemsRes.status}: ${await itemsRes.text()}`)
+
+    const itemsData = (await itemsRes.json()) as { objects?: Record<string, unknown>[] }
+    for (const item of itemsData.objects ?? []) {
+      const itemData = (item.item_data ?? {}) as Record<string, unknown>
+      const variation = ((itemData.variations ?? []) as Record<string, unknown>[])[0]
+      const price = readMoney(((variation?.item_variation_data ?? {}) as Record<string, unknown>).price_money)
+      if (variation && price?.amount != null) {
+        variationByItemId.set(item.id as string, {
+          id: variation.id as string,
+          amount: Number(price.amount),
+          currency: price.currency ?? 'CAD',
+        })
+      }
+    }
   }
 
-  const planNameById = new Map<string, string>()
-  for (const obj of data.related_objects ?? []) {
-    if (obj.type !== 'SUBSCRIPTION_PLAN') continue
-    const planData = (obj.subscription_plan_data ?? {}) as Record<string, unknown>
-    if (typeof planData.name === 'string') planNameById.set(obj.id as string, planData.name)
-  }
+  const result: SubscriptionPlanVariation[] = []
 
-  return (data.objects ?? [])
-    .filter((obj) => obj.type === 'SUBSCRIPTION_PLAN_VARIATION')
-    .map((obj) => {
-      const d = (obj.subscription_plan_variation_data ?? {}) as Record<string, unknown>
-      const planId = d.subscription_plan_id as string | undefined
+  for (const plan of plans) {
+    const planData = (plan.subscription_plan_data ?? {}) as Record<string, unknown>
+    const eligibleItemIds = Array.isArray(planData.eligible_item_ids) ? (planData.eligible_item_ids as string[]) : []
+    const itemPrice = eligibleItemIds.map((id) => variationByItemId.get(id)).find(Boolean)
+
+    for (const variationObj of (planData.subscription_plan_variations ?? []) as Record<string, unknown>[]) {
+      if (variationObj.is_deleted) continue
+      const d = (variationObj.subscription_plan_variation_data ?? {}) as Record<string, unknown>
       const rawPhases = (d.phases ?? []) as Record<string, unknown>[]
+      let priceable = rawPhases.length > 0
 
       const phases: SubscriptionPlanPhase[] = rawPhases.map((p) => {
-        const price = p.recurring_price_money as Record<string, unknown> | undefined
+        const pricing = (p.pricing ?? {}) as Record<string, unknown>
+        const isRelative = pricing.type === 'RELATIVE'
+        const staticPrice = readMoney(pricing.price ?? pricing.price_money ?? p.recurring_price_money)
+        const money = isRelative ? (itemPrice ? { amount: itemPrice.amount, currency: itemPrice.currency } : undefined) : staticPrice
+
+        if (money?.amount == null) priceable = false
+
         return {
+          uid: p.uid as string,
           cadence: p.cadence as string,
           periods: p.periods != null ? Number(p.periods) : undefined,
-          priceCents: price ? Number(price.amount) : 0,
-          currency: (price?.currency as string) ?? 'CAD',
+          pricingType: isRelative ? 'RELATIVE' : 'STATIC',
+          priceCents: Number(money?.amount ?? 0),
+          currency: money?.currency ?? 'CAD',
         }
       })
 
-      return {
-        id: obj.id as string,
-        version: String(obj.version ?? ''),
-        name: d.name as string,
-        planId,
-        planName: planId ? planNameById.get(planId) : undefined,
-        phases,
+      // Never list a plan whose price we can't determine — better missing than shown as $0.
+      if (!priceable) {
+        console.warn(`Skipping subscription plan variation ${variationObj.id}: could not resolve a price`)
+        continue
       }
-    })
+
+      result.push({
+        id: variationObj.id as string,
+        version: String(variationObj.version ?? ''),
+        name: d.name as string,
+        planId: plan.id as string,
+        planName: typeof planData.name === 'string' ? planData.name : undefined,
+        itemVariationId: itemPrice?.id,
+        phases,
+      })
+    }
+  }
+
+  return result
 }
 
 /** Saves a tokenized card (from the Web Payments SDK) to a customer's profile. Returns the new card_id. */
@@ -971,19 +1029,54 @@ export async function saveCardOnFile(customerId: string, sourceId: string): Prom
 /** Creates a recurring Subscription for a customer against a plan variation, billed to a saved card. */
 export async function createSquareSubscription(params: {
   customerId: string
-  planVariationId: string
+  plan: SubscriptionPlanVariation
   cardId: string
 }): Promise<{ id: string; status?: string }> {
-  const res = await squareFetch('/subscriptions', {
-    method: 'POST',
-    body: JSON.stringify({
-      idempotency_key: crypto.randomUUID(),
-      location_id: LOCATION_ID,
-      plan_variation_id: params.planVariationId,
-      customer_id: params.customerId,
-      card_id: params.cardId,
-    }),
-  })
+  const { plan } = params
+  const body: Record<string, unknown> = {
+    idempotency_key: crypto.randomUUID(),
+    location_id: LOCATION_ID,
+    plan_variation_id: plan.id,
+    customer_id: params.customerId,
+    card_id: params.cardId,
+  }
+
+  // RELATIVE-priced phases need a draft order (template) carrying the item's price.
+  const relativePhases = plan.phases.filter((phase) => phase.pricingType === 'RELATIVE')
+  if (relativePhases.length > 0) {
+    if (!plan.itemVariationId) throw new Error(`Plan ${plan.id} has relative pricing but no item to price from`)
+
+    const orderRes = await squareFetch('/orders', {
+      method: 'POST',
+      body: JSON.stringify({
+        idempotency_key: crypto.randomUUID(),
+        order: {
+          location_id: LOCATION_ID,
+          state: 'DRAFT',
+          line_items: [{ catalog_object_id: plan.itemVariationId, quantity: '1' }],
+        },
+      }),
+    })
+
+    if (!orderRes.ok) {
+      await throwSquareApiError(
+        orderRes,
+        'Create subscription order template failed',
+        'We could not set up your subscription. Please try again or contact us for help.'
+      )
+    }
+
+    const orderData = (await orderRes.json()) as { order?: { id: string } }
+    if (!orderData.order) throw new Error('No order template returned')
+
+    body.phases = plan.phases.map((phase, ordinal) =>
+      phase.pricingType === 'RELATIVE'
+        ? { ordinal, order_template_id: orderData.order!.id, plan_phase_uid: phase.uid }
+        : { ordinal, plan_phase_uid: phase.uid }
+    )
+  }
+
+  const res = await squareFetch('/subscriptions', { method: 'POST', body: JSON.stringify(body) })
 
   if (!res.ok) {
     await throwSquareApiError(
