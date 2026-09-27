@@ -894,6 +894,9 @@ export interface SubscriptionPlanVariation {
   planName?: string
   /** Catalog item variation whose price drives RELATIVE-priced phases */
   itemVariationId?: string
+  /** Pulled from the linked item's website custom attributes, same as regular memberships */
+  who?: string
+  includes: string[]
   phases: SubscriptionPlanPhase[]
 }
 
@@ -928,6 +931,7 @@ export async function fetchSubscriptionPlans(): Promise<SubscriptionPlanVariatio
   )
 
   const variationByItemId = new Map<string, { id: string; amount: number; currency: string }>()
+  const websiteInfoByItemId = new Map<string, { who?: string; includes: string[] }>()
   if (itemIds.length > 0) {
     const itemsRes = await squareFetch('/catalog/batch-retrieve', {
       method: 'POST',
@@ -947,6 +951,16 @@ export async function fetchSubscriptionPlans(): Promise<SubscriptionPlanVariatio
           currency: price.currency ?? 'CAD',
         })
       }
+
+      const websiteAttrs = extractWebsiteCustomAttributes(item)
+      const includes =
+        websiteAttrs.description?.includes && websiteAttrs.description.includes.length > 0
+          ? websiteAttrs.description.includes
+          : parseIncludes(itemData.description_plaintext ?? itemData.description)
+      websiteInfoByItemId.set(item.id as string, {
+        who: websiteAttrs.description?.descriptionText,
+        includes,
+      })
     }
   }
 
@@ -956,6 +970,7 @@ export async function fetchSubscriptionPlans(): Promise<SubscriptionPlanVariatio
     const planData = (plan.subscription_plan_data ?? {}) as Record<string, unknown>
     const eligibleItemIds = Array.isArray(planData.eligible_item_ids) ? (planData.eligible_item_ids as string[]) : []
     const itemPrice = eligibleItemIds.map((id) => variationByItemId.get(id)).find(Boolean)
+    const websiteInfo = eligibleItemIds.map((id) => websiteInfoByItemId.get(id)).find(Boolean)
 
     for (const variationObj of (planData.subscription_plan_variations ?? []) as Record<string, unknown>[]) {
       if (variationObj.is_deleted) continue
@@ -994,6 +1009,8 @@ export async function fetchSubscriptionPlans(): Promise<SubscriptionPlanVariatio
         planId: plan.id as string,
         planName: typeof planData.name === 'string' ? planData.name : undefined,
         itemVariationId: itemPrice?.id,
+        who: websiteInfo?.who,
+        includes: websiteInfo?.includes ?? [],
         phases,
       })
     }
