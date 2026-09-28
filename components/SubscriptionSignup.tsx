@@ -162,11 +162,8 @@ export default function SubscriptionSignup({ plans }: { plans: SubscriptionPlanV
           customerPhone: form.phone,
         }),
       })
-      const data = (await res.json()) as { subscription?: { id: string }; error?: string; debug?: string }
-      if (!res.ok || data.error) {
-        console.error('Subscription signup failed', data.debug)
-        throw new Error(data.debug ? `${data.error} [${data.debug}]` : (data.error ?? 'Something went wrong'))
-      }
+      const data = (await res.json()) as { subscription?: { id: string }; error?: string }
+      if (!res.ok || data.error) throw new Error(data.error ?? 'Something went wrong')
 
       setConfirmedSubscriptionId(data.subscription!.id)
       setStep('confirm')
