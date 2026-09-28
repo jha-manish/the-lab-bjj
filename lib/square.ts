@@ -879,6 +879,7 @@ export async function findOrCreateCustomer(
 
 export interface SubscriptionPlanPhase {
   uid: string
+  ordinal: number
   cadence: string
   periods?: number
   pricingType: 'STATIC' | 'RELATIVE'
@@ -988,6 +989,7 @@ export async function fetchSubscriptionPlans(): Promise<SubscriptionPlanVariatio
 
         return {
           uid: p.uid as string,
+          ordinal: p.ordinal != null ? Number(p.ordinal) : 0,
           cadence: p.cadence as string,
           periods: p.periods != null ? Number(p.periods) : undefined,
           pricingType: isRelative ? 'RELATIVE' : 'STATIC',
@@ -1086,11 +1088,11 @@ export async function createSquareSubscription(params: {
     const orderData = (await orderRes.json()) as { order?: { id: string } }
     if (!orderData.order) throw new Error('No order template returned')
 
-    body.phases = plan.phases.map((phase, ordinal) =>
-      phase.pricingType === 'RELATIVE'
-        ? { ordinal, order_template_id: orderData.order!.id, plan_phase_uid: phase.uid }
-        : { ordinal, plan_phase_uid: phase.uid }
-    )
+    // Only relative-priced phases need overriding (to attach the order template) —
+    // plan_phase_uid must NOT be sent; Square generates and assigns it itself.
+    body.phases = plan.phases
+      .filter((phase) => phase.pricingType === 'RELATIVE')
+      .map((phase) => ({ ordinal: phase.ordinal, order_template_id: orderData.order!.id }))
   }
 
   const res = await squareFetch('/subscriptions', { method: 'POST', body: JSON.stringify(body) })
