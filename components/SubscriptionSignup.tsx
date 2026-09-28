@@ -120,14 +120,13 @@ export default function SubscriptionSignup({ plans }: { plans: SubscriptionPlanV
 
     try {
       const [givenName, ...rest] = form.name.trim().split(' ')
-      const mainPhase = selectedPlan.phases[selectedPlan.phases.length - 1]
 
       let result: Awaited<ReturnType<SquareCard['tokenize']>>
       try {
+        // Square's STORE intent verifies the card without charging, so it does not
+        // accept amount/currencyCode — those are only valid for CHARGE/CHARGE_AND_STORE.
         result = await cardInstance.tokenize({
           intent: 'STORE',
-          amount: (mainPhase.priceCents / 100).toFixed(2),
-          currencyCode: mainPhase.currency || 'CAD',
           customerInitiated: true,
           sellerKeyedIn: false,
           billingContact: {
