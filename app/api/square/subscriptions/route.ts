@@ -8,7 +8,6 @@ import {
   fetchSubscriptionPlans,
   getPublicSquareErrorMessage,
   getPublicSquareErrorStatus,
-  SquareApiError,
 } from '@/lib/square'
 
 export async function POST(request: NextRequest) {
@@ -47,8 +46,6 @@ export async function POST(request: NextRequest) {
           err,
           'We could not complete your subscription signup. Please try again or contact us for help.'
         ),
-        // TEMP diagnostic — remove once the relative-pricing subscribe path is confirmed working.
-        debug: err instanceof SquareApiError ? err.responseBody : err instanceof Error ? err.message : String(err),
       },
       { status: getPublicSquareErrorStatus(err) }
     )
