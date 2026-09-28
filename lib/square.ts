@@ -919,7 +919,13 @@ export async function fetchSubscriptionPlans(): Promise<SubscriptionPlanVariatio
   if (!res.ok) throw new Error(`Square subscription plans ${res.status}: ${await res.text()}`)
 
   const data = (await res.json()) as { objects?: Record<string, unknown>[] }
-  const plans = (data.objects ?? []).filter((obj) => obj.type === 'SUBSCRIPTION_PLAN' && !obj.is_deleted)
+  const plans = (data.objects ?? []).filter((obj) => {
+    if (obj.type !== 'SUBSCRIPTION_PLAN' || obj.is_deleted) return false
+    // Test plans (named "TEST - ...") can't be deleted from Square while an active
+    // subscription still references them, so filter them out here instead.
+    const name = ((obj.subscription_plan_data ?? {}) as Record<string, unknown>).name
+    return typeof name !== 'string' || !name.toUpperCase().startsWith('TEST -')
+  })
 
   // RELATIVE-priced phases take their price from the catalog item the plan is attached to.
   const itemIds = Array.from(
