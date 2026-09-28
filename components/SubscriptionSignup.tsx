@@ -145,7 +145,9 @@ export default function SubscriptionSignup({ plans }: { plans: SubscriptionPlanV
       }
 
       if (result.status !== 'OK' || !result.token) {
-        setError(CARD_VERIFICATION_ERROR_MESSAGE)
+        console.error('Square card tokenization failed', result)
+        const detail = result.errors?.[0]?.message
+        setError(detail ? `${CARD_VERIFICATION_ERROR_MESSAGE} (${detail})` : CARD_VERIFICATION_ERROR_MESSAGE)
         setSubmitting(false)
         return
       }
