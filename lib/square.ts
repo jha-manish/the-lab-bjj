@@ -921,10 +921,16 @@ export async function fetchSubscriptionPlans(): Promise<SubscriptionPlanVariatio
   const data = (await res.json()) as { objects?: Record<string, unknown>[] }
   const plans = (data.objects ?? []).filter((obj) => {
     if (obj.type !== 'SUBSCRIPTION_PLAN' || obj.is_deleted) return false
-    // Test plans (named "TEST - ...") can't be deleted from Square while an active
-    // subscription still references them, so filter them out here instead.
-    const name = ((obj.subscription_plan_data ?? {}) as Record<string, unknown>).name
-    return typeof name !== 'string' || !name.toUpperCase().startsWith('TEST -')
+    // "Deactivate" in the Square Dashboard sets present_at_all_locations to false
+    // without adding our location back to present_at_location_ids — this is the
+    // only way to retire a plan that still has an active subscription attached
+    // (Square blocks deleting one outright). Search doesn't filter by location
+    // itself, so we check it here.
+    if (obj.present_at_all_locations === false) {
+      const presentAt = Array.isArray(obj.present_at_location_ids) ? (obj.present_at_location_ids as string[]) : []
+      if (!presentAt.includes(LOCATION_ID)) return false
+    }
+    return true
   })
 
   // RELATIVE-priced phases take their price from the catalog item the plan is attached to.
