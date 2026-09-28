@@ -145,7 +145,9 @@ export default function SubscriptionSignup({ plans }: { plans: SubscriptionPlanV
       }
 
       if (result.status !== 'OK' || !result.token) {
-        setError(CARD_VERIFICATION_ERROR_MESSAGE)
+        console.error('Square card tokenization failed', result)
+        const detail = result.errors?.[0]?.message
+        setError(detail ? `${CARD_VERIFICATION_ERROR_MESSAGE} (${detail})` : CARD_VERIFICATION_ERROR_MESSAGE)
         setSubmitting(false)
         return
       }
@@ -200,22 +202,45 @@ export default function SubscriptionSignup({ plans }: { plans: SubscriptionPlanV
               <button
                 key={plan.id}
                 onClick={() => selectPlan(plan)}
-                className="text-left bg-zinc-900 border border-white/10 hover:border-teal-500/50 rounded-xl p-6 flex flex-col gap-3 transition-all"
+                className="text-left bg-zinc-900 border border-white/10 hover:border-teal-500/50 rounded-xl flex flex-col overflow-hidden transition-all"
               >
-                <h3 className="font-black text-lg text-white">{plan.planName ?? plan.name}</h3>
-                {trialPhase && (
-                  <p className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-3 py-2 font-semibold">
-                    {trialPhase.priceCents === 0 ? 'Free' : formatCents(trialPhase.priceCents, trialPhase.currency)} for{' '}
-                    {trialPhase.periods} {formatCadence(trialPhase.cadence)}
-                    {(trialPhase.periods ?? 0) > 1 ? 's' : ''}, then:
-                  </p>
-                )}
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-white">{formatCents(mainPhase.priceCents, mainPhase.currency)}</span>
-                  <span className="text-sm text-gray-500">/{formatCadence(mainPhase.cadence)}</span>
+                {/* Header */}
+                <div className="px-6 py-5 bg-zinc-800">
+                  <h3 className="font-black text-lg text-white mb-1">{plan.planName ?? plan.name}</h3>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-white">{formatCents(mainPhase.priceCents, mainPhase.currency)}</span>
+                    <span className="text-sm text-gray-500">/{formatCadence(mainPhase.cadence)}</span>
+                  </div>
+                  {plan.who && <p className="text-sm text-gray-400 mt-2">{plan.who}</p>}
+                  {trialPhase && (
+                    <p className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-3 py-2 font-semibold mt-3">
+                      {trialPhase.priceCents === 0 ? 'Free' : formatCents(trialPhase.priceCents, trialPhase.currency)} for{' '}
+                      {trialPhase.periods} {formatCadence(trialPhase.cadence)}
+                      {(trialPhase.periods ?? 0) > 1 ? 's' : ''}, then the rate above
+                    </p>
+                  )}
                 </div>
-                <div className="mt-2 text-center bg-teal-500/10 text-teal-400 border border-teal-500/30 font-black text-sm px-4 py-2.5 rounded">
-                  Subscribe →
+
+                {/* Includes */}
+                {plan.includes.length > 0 && (
+                  <div className="px-6 py-5 flex-1">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">What&apos;s included</p>
+                    <ul className="flex flex-col gap-2">
+                      {plan.includes.map((item) => (
+                        <li key={item} className="flex items-start gap-2 text-sm text-gray-300">
+                          <span className="text-teal-400 mt-0.5 shrink-0">✓</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* CTA */}
+                <div className="px-6 pb-6 pt-4 border-t border-white/5 mt-auto">
+                  <div className="text-center bg-teal-500/10 text-teal-400 border border-teal-500/30 font-black text-sm px-4 py-2.5 rounded">
+                    Subscribe →
+                  </div>
                 </div>
               </button>
             )
