@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { SubscriptionPlanVariation } from '@/lib/square'
+import WaiverCallout from '@/components/WaiverCallout'
 
 declare global {
   interface Window {
@@ -324,6 +325,7 @@ export default function SubscriptionSignup({ plans }: { plans: SubscriptionPlanV
               subscription is active. You&apos;ll be billed automatically each cycle.
             </p>
             <p className="text-gray-600 text-xs mb-6">Reference: {confirmedSubscriptionId}</p>
+            <WaiverCallout />
             <button onClick={reset} className="text-teal-400 hover:text-teal-300 font-semibold text-sm transition-colors">
               Set up another subscription
             </button>
