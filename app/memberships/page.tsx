@@ -344,13 +344,21 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
                       <Link
                         key={mp.name}
                         href={getPrepaidMembershipHref(mp.membership, discount)}
-                        className="block px-6 py-4 text-left transition-colors hover:bg-zinc-800/70 focus:bg-zinc-800/70 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
+                        className="group flex items-center gap-4 px-6 py-4 text-left transition-colors hover:bg-zinc-800/70 focus:bg-zinc-800/70 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
                       >
-                        <p className="text-sm text-gray-400 mb-1">{mp.name}</p>
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-2xl font-black text-white">{fmtCents(totalCents)}</span>
-                          <span className="text-sm text-gray-500">{fmtCents(perMonthCents)}/mo</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-400 mb-1">{mp.name}</p>
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-2xl font-black text-white transition-colors group-hover:text-teal-400">{fmtCents(totalCents)}</span>
+                            <span className="text-sm text-gray-500">{fmtCents(perMonthCents)}/mo</span>
+                          </div>
                         </div>
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 flex h-9 w-9 items-center justify-center rounded-full border border-teal-500/40 bg-teal-500/10 text-teal-400 font-black transition-colors group-hover:bg-teal-500 group-hover:text-black group-focus:bg-teal-500 group-focus:text-black"
+                        >
+                          →
+                        </span>
                       </Link>
                     )
                   })}
