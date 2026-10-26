@@ -185,7 +185,7 @@ export default function SubscriptionSignup({ plans }: { plans: SubscriptionPlanV
   if (plans.length === 0) {
     return (
       <div className="bg-zinc-900 border border-white/10 rounded-xl p-6 text-gray-400">
-        Subscriptions aren&apos;t set up yet — check back soon, or contact us to get started.
+        Memberships are unavailable right now. Please contact us directly to get started.
       </div>
     )
   }

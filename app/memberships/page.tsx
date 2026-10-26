@@ -25,10 +25,6 @@ function fmtCents(cents: number) {
   return fmt(cents / 100)
 }
 
-function fmtMonthlyPrice(cents: number) {
-  return cents > 0 ? fmtCents(cents) : 'Contact us'
-}
-
 type CatalogItems = Awaited<ReturnType<typeof fetchCatalogItems>>
 type MembershipFlowCategory = 'memberships' | 'privates'
 type DurationUnit = 'day' | 'week' | 'month' | 'year'
@@ -131,20 +127,6 @@ function getMemberships(items: CatalogItems) {
       includes: attrs.description!.includes,
     }
   })
-}
-
-function getMembershipHref(membership: ReturnType<typeof getMemberships>[number]) {
-  const params = new URLSearchParams({
-    category: 'memberships',
-    itemId: membership.id,
-    membership: membership.name,
-  })
-
-  if (membership.variationId) params.set('variationId', membership.variationId)
-  if (membership.variationName) params.set('variation', membership.variationName)
-  if (membership.amount) params.set('amount', membership.amount)
-
-  return `/memberships?${params.toString()}`
 }
 
 function getPrepaidMembershipHref(membership: ReturnType<typeof getMemberships>[number], discount: ReturnType<typeof getPrepaidMembershipDiscounts>[number]) {
@@ -318,58 +300,16 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
             </Link>
           </div>
 
-          {/* Membership cards */}
-          <div id="memberships" className="scroll-mt-24 grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
-            {memberships.length === 0 && (
-              <div className="lg:col-span-3 bg-zinc-900 border border-white/10 rounded-xl p-6 text-gray-400">
-                Memberships are unavailable right now. Please contact us directly to get started.
-              </div>
-            )}
-            {memberships.map(m => (
-              <div
-                key={m.name}
-                className={`rounded-xl border flex flex-col overflow-hidden ${m.highlight ? 'border-teal-500' : 'border-white/10'}`}
-              >
-                {/* Header */}
-                <div className={`px-6 py-5 ${m.highlight ? 'bg-teal-500' : 'bg-zinc-800'}`}>
-                  <p className={`text-sm font-semibold mb-1 ${m.highlight ? 'text-black/70' : 'text-teal-400'}`}>{m.name}</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className={`text-4xl font-black ${m.highlight ? 'text-black' : 'text-white'}`}>{fmtMonthlyPrice(m.priceCents)}</span>
-                    {m.priceCents > 0 && (
-                      <span className={`text-sm ${m.highlight ? 'text-black/60' : 'text-gray-500'}`}>/month</span>
-                    )}
-                  </div>
-                  <p className={`text-sm mt-2 ${m.highlight ? 'text-black/70' : 'text-gray-400'}`}>{m.who}</p>
-                </div>
-
-                {/* Includes */}
-                <div className="bg-zinc-900 px-6 py-5 flex-1">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">What&apos;s included</p>
-                  <ul className="flex flex-col gap-2">
-                    {m.includes.map(item => (
-                      <li key={item} className="flex items-start gap-2 text-sm text-gray-300">
-                        <span className="text-teal-400 mt-0.5 shrink-0">✓</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* CTA */}
-                <div className="bg-zinc-900 px-6 pb-6 pt-4 border-t border-white/5">
-                  <Link
-                    href={getMembershipHref(m)}
-                    className={`block text-center font-black text-sm px-4 py-3 rounded transition-colors ${
-                      m.highlight
-                        ? 'bg-teal-500 hover:bg-teal-400 text-black'
-                        : 'bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-white'
-                    }`}
-                  >
-                    Get Started →
-                  </Link>
-                </div>
-              </div>
-            ))}
+          {/* Memberships — monthly auto-billed plans, pulled live from Square */}
+          <div id="memberships" className="scroll-mt-24">
+            <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">Auto-Billed</p>
+            <h2 className="text-4xl font-black mb-3">Subscriptions</h2>
+            <p className="text-gray-400 max-w-2xl mb-10 leading-relaxed">
+              Save your card once — we&apos;ll bill you automatically each cycle, no need to pay manually every month.
+            </p>
+            <div className="mb-20">
+              <SubscriptionSignup plans={subscriptionPlans} />
+            </div>
           </div>
 
           {/* Commitment Plans */}
@@ -417,16 +357,6 @@ export default async function MembershipsPage({ searchParams }: MembershipsPageP
                 </div>
               </div>
             ))}
-          </div>
-
-          {/* Subscriptions — recurring billing, separate from the one-time membership items above */}
-          <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">Auto-Billed</p>
-          <h2 className="text-4xl font-black mb-3">Subscriptions</h2>
-          <p className="text-gray-400 max-w-2xl mb-10 leading-relaxed">
-            Save your card once — we&apos;ll bill you automatically each cycle, no need to pay manually every month.
-          </p>
-          <div className="mb-20">
-            <SubscriptionSignup plans={subscriptionPlans} />
           </div>
 
           {/* Drop-in & Private */}
