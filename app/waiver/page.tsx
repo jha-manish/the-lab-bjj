@@ -4,7 +4,7 @@ import { WAIVER_MEMBERSHIP_FORM } from '@/lib/forms'
 export const metadata: Metadata = {
   title: 'Waiver & Membership Form',
   description: 'Complete your liability waiver and membership form for The Jiu-Jitsu Lab in Waterloo, ON.',
-  alternates: { canonical: 'https://labjiujitsu.com/join' },
+  alternates: { canonical: 'https://labjiujitsu.com/waiver' },
   robots: { index: false, follow: true },
 }
 

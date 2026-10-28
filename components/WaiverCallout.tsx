@@ -6,7 +6,7 @@ export default function WaiverCallout() {
       <p className="text-amber-400 font-black text-sm mb-1">One more step</p>
       <p className="text-gray-300 text-sm mb-3">Complete your waiver and membership form so you&apos;re all set.</p>
       <Link
-        href="/join"
+        href="/waiver"
         className="inline-block bg-teal-500 hover:bg-teal-400 text-black font-black text-sm px-4 py-2 rounded transition-colors"
       >
         Complete the form →
