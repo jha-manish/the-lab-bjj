@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import { WAIVER_MEMBERSHIP_FORM } from '@/lib/forms'
+import { WAIVER_FORM } from '@/lib/forms'
 
 export const metadata: Metadata = {
-  title: 'Waiver & Membership Form',
-  description: 'Complete your liability waiver and membership form for The Jiu-Jitsu Lab in Waterloo, ON.',
+  title: 'Waiver',
+  description: 'Complete your liability waiver for The Jiu-Jitsu Lab in Waterloo, ON.',
   alternates: { canonical: 'https://labjiujitsu.com/waiver' },
   robots: { index: false, follow: true },
 }
@@ -14,16 +14,16 @@ export default function JoinPage() {
       <div className="max-w-3xl mx-auto px-4">
         <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">The Jiu-Jitsu Lab</p>
         <h1 className="text-5xl font-black mb-4">
-          Waiver & <span className="text-teal-400">Membership Form</span>
+          Sign Your <span className="text-teal-400">Waiver</span>
         </h1>
         <p className="text-gray-300 text-lg mb-10 leading-relaxed">
-          Complete the form below to sign your waiver and register as a member.
+          Complete the form below to sign your waiver.
         </p>
 
         <div className="rounded-xl overflow-hidden border border-white/10 bg-white">
           <iframe
-            src={WAIVER_MEMBERSHIP_FORM.embedUrl}
-            title="Waiver and membership form"
+            src={WAIVER_FORM.embedUrl}
+            title="Waiver form"
             className="block w-full h-[85vh] min-h-[640px] border-0"
             loading="lazy"
           >
@@ -34,7 +34,7 @@ export default function JoinPage() {
         <p className="text-center mt-4 text-sm text-gray-500">
           Having trouble?{' '}
           <a
-            href={WAIVER_MEMBERSHIP_FORM.shareUrl}
+            href={WAIVER_FORM.shareUrl}
             target="_blank"
             rel="noreferrer"
             className="text-teal-400 hover:text-teal-300 transition-colors"
