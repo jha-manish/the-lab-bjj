@@ -24,7 +24,7 @@ export default function JoinPage() {
           <iframe
             src={WAIVER_MEMBERSHIP_FORM.embedUrl}
             title="Waiver and membership form"
-            className="block w-full h-[1600px] border-0"
+            className="block w-full h-[85vh] min-h-[640px] border-0"
             loading="lazy"
           >
             Loading…

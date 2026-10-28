@@ -2,6 +2,6 @@
 // separate waiver / membership forms later, add a second entry here and a page for it.
 export const WAIVER_MEMBERSHIP_FORM = {
   embedUrl:
-    'https://docs.google.com/forms/d/e/1FAIpQLSff9A7uzh2bnmsKbm8jeQyVfQVQG0EajL4Mr5jDmbO3LBxsZA/viewform?embedded=true',
-  shareUrl: 'https://forms.gle/CLStTb3ZtcbUbL6MA',
+    'https://docs.google.com/forms/d/e/1FAIpQLSedrhdwSqjvKJ_wXwIsN6Z4U7f--PWMaXMKAOK3NKncp0kl7A/viewform?embedded=true',
+  shareUrl: 'https://forms.gle/yrRxeZxje4GYvoGb8',
 }
