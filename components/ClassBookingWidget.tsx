@@ -5,6 +5,7 @@ import type { KeyboardEvent } from 'react'
 import { TRIAL_CLASSES, type TrialClass } from '@/lib/trial-classes'
 import { trackMetaLead } from '@/lib/meta-pixel'
 import { getStoredAttribution } from '@/lib/attribution'
+import WaiverCallout from '@/components/WaiverCallout'
 
 const LEVEL_COLORS: Record<string, string> = {
   'Beginners':  'bg-green-500/20 text-green-400 border-green-500/30',
@@ -493,6 +494,7 @@ export default function ClassBookingWidget() {
               A confirmation has been sent to <span className="text-white">{form.email}</span>.
               Arrive 10–15 minutes early so we can show you around.
             </p>
+            <WaiverCallout />
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a
                 href="https://maps.app.goo.gl/aJwg6Sc1smkmKRTz7"
