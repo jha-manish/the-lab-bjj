@@ -3,48 +3,34 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Class Schedule | The Jiu-Jitsu Lab Waterloo',
-  description: 'BJJ class schedule in Waterloo, ON. Morning, noon, evening, and weekend classes. Gi, No-Gi, Kids, Women\'s, Competition, and Open Mat.',
+  description: 'BJJ class schedule in Waterloo, ON. Morning, evening, and weekend classes. Gi, No-Gi, Kids, Women\'s, and Open Mat.',
   alternates: { canonical: 'https://labjiujitsu.com/schedule' },
   openGraph: { url: 'https://labjiujitsu.com/schedule' },
 }
 
-const eveningClasses = [
-  { time: '5:00–6:00 PM', name: 'Kids BJJ', level: 'Ages 5–15' },
-  { time: '6:00–7:00 PM', name: 'Beginners Class', level: 'Beginners' },
-  { time: '7:00–8:30 PM', name: 'Regular Class', level: 'All Levels' },
-]
-
-const morningClass = { time: '6:30–8:00 AM', name: 'Morning Class', level: 'All Levels' }
+const kids = { time: '5:00 PM', name: 'Kids Class', level: 'Ages 5–15' }
+const adultGi = { time: '6:00 PM', name: 'Adult Gi', level: 'All Levels' }
+const adultNoGi = { time: '6:00 PM', name: 'Adult No-Gi', level: 'All Levels' }
+const morningNoGi = { time: '6:30 AM', name: 'Adult No-Gi', level: 'All Levels' }
+const weekendNoGi = { time: '10:30 AM', name: 'No-Gi with Dave Knowles', level: 'All Levels' }
 
 const schedule = [
-  { day: 'Monday', classes: eveningClasses },
-  { day: 'Tuesday', classes: [morningClass, ...eveningClasses] },
-  { day: 'Wednesday', classes: eveningClasses },
-  { day: 'Thursday', classes: [morningClass, ...eveningClasses] },
+  { day: 'Monday', classes: [kids, adultGi] },
+  { day: 'Tuesday', classes: [morningNoGi, kids, adultNoGi] },
+  { day: 'Wednesday', classes: [kids, adultGi] },
+  { day: 'Thursday', classes: [morningNoGi, kids, adultNoGi] },
   {
     day: 'Friday',
     classes: [
-      { time: '5:00–6:00 PM', name: "Women's Only Class", level: 'Women Only' },
-      { time: '6:00–7:00 PM', name: 'Q&A / Drilling', level: 'All Levels' },
-      { time: '7:30 PM', name: 'Open Mat', level: 'Free — All Welcome' },
+      { time: '5:00 PM', name: "Women's Only Class", level: 'Women Only' },
+      { time: '6:00 PM', name: 'Open Mat', level: 'Free — All Welcome' },
     ],
   },
-  {
-    day: 'Saturday',
-    classes: [
-      { time: '10:00 AM–12:00 PM', name: 'No-Gi with Dave Knowles', level: 'All Levels' },
-    ],
-  },
-  {
-    day: 'Sunday',
-    classes: [
-      { time: '10:30 AM–12:00 PM', name: 'Competition Class with Dave Knowles', level: 'Free — All Welcome' },
-    ],
-  },
+  { day: 'Saturday', classes: [weekendNoGi] },
+  { day: 'Sunday', classes: [weekendNoGi] },
 ]
 
 const levelColors: Record<string, string> = {
-  'Beginners': 'bg-green-500/20 text-green-400',
   'All Levels': 'bg-blue-500/20 text-blue-400',
   'Ages 5–15': 'bg-purple-500/20 text-purple-400',
   'Women Only': 'bg-pink-500/20 text-pink-400',
@@ -72,7 +58,7 @@ export default function SchedulePage() {
                   {day.classes.map(c => (
                     <div key={c.time + c.name} className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <span className="text-teal-400 font-mono text-sm w-32 shrink-0">{c.time}</span>
+                        <span className="text-teal-400 font-mono text-sm w-[5.5rem] shrink-0">{c.time}</span>
                         <span className="text-white font-medium">{c.name}</span>
                       </div>
                       <span className={`text-xs px-2 py-0.5 rounded font-semibold whitespace-nowrap ${levelColors[c.level] || 'bg-gray-500/20 text-gray-400'}`}>
