@@ -209,7 +209,7 @@ export default function SubscriptionSignup({ plans }: { plans: SubscriptionPlanV
                   <h3 className="font-black text-lg text-white mb-1">{plan.planName ?? plan.name}</h3>
                   <div className="flex items-baseline gap-1">
                     <span className="text-3xl font-black text-white">{formatCents(mainPhase.priceCents, mainPhase.currency)}</span>
-                    <span className="text-sm text-gray-500">/{formatCadence(mainPhase.cadence)}</span>
+                    <span className="text-sm text-gray-500">/{formatCadence(mainPhase.cadence)} + HST</span>
                   </div>
                   {plan.who && <p className="text-sm text-gray-400 mt-2">{plan.who}</p>}
                   {trialPhase && (
