@@ -1085,6 +1085,9 @@ export async function createSquareSubscription(params: {
           location_id: LOCATION_ID,
           state: 'DRAFT',
           line_items: [{ catalog_object_id: plan.itemVariationId, quantity: '1' }],
+          // The Orders API only applies the item's catalog tax (HST) when asked; without
+          // this every subscription invoice is billed at the pre-tax price.
+          pricing_options: { auto_apply_taxes: true },
         },
       }),
     })
