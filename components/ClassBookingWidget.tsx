@@ -8,7 +8,6 @@ import { getStoredAttribution } from '@/lib/attribution'
 import WaiverCallout from '@/components/WaiverCallout'
 
 const LEVEL_COLORS: Record<string, string> = {
-  'Beginners':  'bg-green-500/20 text-green-400 border-green-500/30',
   'All Levels': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   'Women Only': 'bg-pink-500/20 text-pink-400 border-pink-500/30',
   'Ages 5–15':  'bg-purple-500/20 text-purple-400 border-purple-500/30',
@@ -291,11 +290,6 @@ export default function ClassBookingWidget() {
                   </span>
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed flex-1">{cls.desc}</p>
-                {'tip' in cls && cls.tip && (
-                  <p className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-3 py-2 font-semibold">
-                    💡 {cls.tip}
-                  </p>
-                )}
                 <p className="text-teal-400 text-xs font-semibold">🕐 {cls.time}</p>
                 <div className="mt-1 text-center bg-teal-500/10 text-teal-400 border border-teal-500/30 font-black text-sm px-4 py-2.5 rounded">
                   Select →

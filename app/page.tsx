@@ -112,7 +112,7 @@ export default function Home() {
                   'IBJJF World Silver Medalist as Head Coach',
                   'Four world-level instructors',
                   'Rooted in 25+ years of BJJ history in KW',
-                  'Dedicated Fundamentals classes for beginners',
+                  'Gi and No-Gi classes for every level, beginners welcome',
                   'Kids, Women\'s, and Competition programs',
                   'Free trial week — no commitment',
                 ].map(item => (
