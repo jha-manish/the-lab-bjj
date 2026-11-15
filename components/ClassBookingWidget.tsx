@@ -39,8 +39,11 @@ function formatSlotDay(isoUtc: string) {
   }).format(new Date(isoUtc))
 }
 
+// Dates are handled as noon-UTC instants of a Toronto calendar day, so the
+// day key, the on-screen label and Square's query range always agree,
+// whatever the visitor's own timezone or time of day.
 function isoDate(d: Date): string {
-  return d.toISOString().slice(0, 10)
+  return new Intl.DateTimeFormat('en-CA', { timeZone: ET }).format(d)
 }
 
 function availabilityKey(serviceVariationId: string, startDate: string) {
@@ -48,20 +51,18 @@ function availabilityKey(serviceVariationId: string, startDate: string) {
 }
 
 function nextNDates(n: number, offsetDays = 0): Date[] {
+  const [y, m, day] = isoDate(new Date()).split('-').map(Number)
   const dates: Date[] = []
-  const now = new Date()
   for (let i = 1 + offsetDays; i <= n + offsetDays; i++) {
-    const d = new Date(now)
-    d.setDate(now.getDate() + i)
-    dates.push(d)
+    dates.push(new Date(Date.UTC(y, m - 1, day + i, 12)))
   }
   return dates
 }
 
 function labelDate(d: Date) {
-  const weekday = d.toLocaleDateString('en-CA', { weekday: 'short' })
-  const day = d.getDate()
-  const month = d.toLocaleDateString('en-CA', { month: 'short' })
+  const weekday = d.toLocaleDateString('en-CA', { weekday: 'short', timeZone: ET })
+  const day = Number(new Intl.DateTimeFormat('en-CA', { day: 'numeric', timeZone: ET }).format(d))
+  const month = d.toLocaleDateString('en-CA', { month: 'short', timeZone: ET })
   return { weekday, day, month }
 }
 
