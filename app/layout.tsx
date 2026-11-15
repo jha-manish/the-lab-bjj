@@ -141,10 +141,10 @@ export default function RootLayout({
               "longitude": -80.5365
             },
             "openingHoursSpecification": [
-              { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Wednesday"], "opens": "17:00", "closes": "20:30" },
-              { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Tuesday","Thursday"], "opens": "06:30", "closes": "20:30" },
-              { "@type": "OpeningHoursSpecification", "dayOfWeek": "Friday", "opens": "17:00", "closes": "20:30" },
-              { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "10:00", "closes": "12:00" },
+              { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Wednesday"], "opens": "17:00", "closes": "19:30" },
+              { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Tuesday","Thursday"], "opens": "06:30", "closes": "19:30" },
+              { "@type": "OpeningHoursSpecification", "dayOfWeek": "Friday", "opens": "17:00", "closes": "19:30" },
+              { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "10:30", "closes": "12:00" },
               { "@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "10:30", "closes": "12:00" }
             ],
             "priceRange": "$$",
