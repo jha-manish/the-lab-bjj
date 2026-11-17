@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SubscriptionPlanVariation } from '@/lib/square'
 import WaiverCallout from '@/components/WaiverCallout'
+import { trackSubscriptionStarted } from '@/lib/analytics'
 
 declare global {
   interface Window {
@@ -168,6 +169,13 @@ export default function SubscriptionSignup({ plans }: { plans: SubscriptionPlanV
 
       setConfirmedSubscriptionId(data.subscription!.id)
       setStep('confirm')
+      const recurringPhase = selectedPlan.phases[selectedPlan.phases.length - 1]
+      trackSubscriptionStarted({
+        subscriptionId: data.subscription!.id,
+        planName: selectedPlan.planName ?? selectedPlan.name,
+        monthlyCents: recurringPhase?.priceCents ?? 0,
+        currency: recurringPhase?.currency ?? 'CAD',
+      })
       scrollToStep()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { trackContactSubmitted } from '@/lib/analytics'
 import Link from 'next/link'
 
 export default function ContactPage() {
@@ -22,6 +23,7 @@ export default function ContactPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Something went wrong')
       setStatus('success')
+      trackContactSubmitted('contact_page')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setStatus('error')

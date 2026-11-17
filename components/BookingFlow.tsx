@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
+import { trackAppointmentBooked, trackPurchase } from '@/lib/analytics'
 
 declare global {
   interface Window {
@@ -421,6 +422,7 @@ export default function BookingFlow({
         amount: prepaidPurchase?.totalAmountCents ?? parseInt(price?.amount ?? '0'),
         currency: prepaidPurchase?.currency ?? price?.currency ?? 'CAD',
       }
+      let purchaseId: string
       let result: Awaited<ReturnType<SquareCard['tokenize']>>
       try {
         result = await cardInstance.tokenize()
@@ -456,6 +458,7 @@ export default function BookingFlow({
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
         setConfirmData({ id: data.booking.id, startAt: data.booking.startAt })
+        purchaseId = data.booking.id
       } else {
         const res = await fetch('/api/square/payment', {
           method: 'POST',
@@ -477,9 +480,17 @@ export default function BookingFlow({
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
         setConfirmData({ id: data.payment.id })
+        purchaseId = data.payment.id
       }
 
       setStep('confirm')
+      trackPurchase({
+        transactionId: purchaseId,
+        itemName: selectedItem?.itemData?.name ?? 'Unknown item',
+        category: category ? CATEGORY_META[category].label : 'Unknown',
+        amountCents: amountMoney.amount,
+        currency: amountMoney.currency,
+      })
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Payment failed')
     } finally {
@@ -509,6 +520,10 @@ export default function BookingFlow({
       if (!res.ok) throw new Error(data.error)
       setConfirmData({ id: data.booking.id, startAt: data.booking.startAt })
       setStep('confirm')
+      trackAppointmentBooked({
+        bookingId: data.booking.id,
+        itemName: selectedItem?.itemData?.name ?? 'Unknown item',
+      })
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Booking failed')
     } finally {
