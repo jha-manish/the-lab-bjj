@@ -87,7 +87,12 @@ type AvailabilityByKey = Record<string, Slot[]>
 type Step = 'class' | 'date' | 'details' | 'confirm'
 
 // ── Main component ─────────────────────────────────────────────────────────
-export default function ClassBookingWidget() {
+export default function ClassBookingWidget({
+  classes = TRIAL_CLASSES,
+}: {
+  /** Limit the class picker to these classes (e.g. only the kids class on /kids). */
+  classes?: readonly TrialClass[]
+} = {}) {
   const [step, setStep] = useState<Step>('class')
   const [selectedClass, setSelectedClass] = useState<TrialClass | null>(null)
   const [slotsError, setSlotsError] = useState<string | null>(null)
@@ -277,8 +282,8 @@ export default function ClassBookingWidget() {
 
         {/* ── Step 1: Select Class ───────────────────────────────────── */}
         {step === 'class' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {TRIAL_CLASSES.map(cls => (
+          <div className={`grid grid-cols-1 gap-4 ${classes.length > 1 ? 'sm:grid-cols-2' : ''}`}>
+            {classes.map(cls => (
               <button
                 key={cls.itemId}
                 onClick={() => selectClass(cls)}
