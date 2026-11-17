@@ -32,12 +32,31 @@ const benefits = [
   },
 ]
 
+const parentReviews = [
+  {
+    quote:
+      'My kid is enrolled in the kids lessons for more than a year. She really enjoys the class. The gym is always clean, welcoming, and family-friendly. The coaches create such a positive and fun environment for the kids while still teaching discipline, confidence, and strong technique.',
+    name: 'Angelica S.',
+  },
+  {
+    quote:
+      "Great kids class, my eight year old daughter loves it. There's a good mix of kids from small weak and clueless all the way up to little warriors that are trying to conquer the world. Everyone has a great time.",
+    name: 'Joe I.',
+  },
+]
+
+const GOOGLE_REVIEWS_URL = 'https://www.google.com/maps/place/?q=place_id:ChIJC8GkouL0K4gRqv2ztNsE7pM'
+
 const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday']
 
 const faqs = [
   {
     q: 'What ages is the kids program for?',
     a: 'Our kids classes are for ages 5 to 15.',
+  },
+  {
+    q: 'Do younger and older kids train together?',
+    a: 'No. Younger and older kids are split into separate groups, so every child learns and practises with kids closer to their own age and size.',
   },
   {
     q: 'Does my child need any experience?',
@@ -122,7 +141,8 @@ export default function KidsPage() {
               Confidence, focus and real self-defence — taught through fun, structured classes your kid will actually look forward to.
             </p>
             <p className="text-gray-300 mb-8 leading-relaxed">
-              Monday to Thursday, 5:00–6:00 PM, led by Black Belt Roger Morais. The first week is free.
+              Monday to Thursday, 5:00–6:00 PM, led by Black Belt Roger Morais, with younger and older kids in separate groups.
+              The first week is free.
             </p>
             <div className="flex flex-wrap gap-4">
               <a href="#book" className="bg-teal-500 hover:bg-teal-400 text-black font-black px-8 py-4 rounded text-lg transition-colors">
@@ -195,7 +215,7 @@ export default function KidsPage() {
               ))}
             </div>
             <p className="text-gray-400 text-sm mt-4 leading-relaxed">
-              Parents train too? Adult classes start at 6:00 PM on the same nights.{' '}
+              Younger and older kids train in separate groups. Parents train too? Adult classes start at 6:00 PM on the same nights.{' '}
               <Link href="/schedule" className="text-teal-400 hover:text-teal-300 font-semibold">
                 Full schedule →
               </Link>
@@ -204,8 +224,35 @@ export default function KidsPage() {
         </div>
       </section>
 
-      {/* First class */}
+      {/* Parent reviews */}
       <section className="bg-zinc-900 py-20">
+        <div className="max-w-6xl mx-auto px-4">
+          <p className="text-teal-400 font-semibold tracking-widest text-xs uppercase mb-3">From Our Parents</p>
+          <h2 className="text-4xl font-black mb-3">
+            What Parents <span className="text-teal-400">Say</span>
+          </h2>
+          <p className="text-gray-400 mb-10">
+            Rated 4.9 on Google.{' '}
+            <a href={GOOGLE_REVIEWS_URL} target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:text-teal-300 font-semibold">
+              Read all reviews →
+            </a>
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {parentReviews.map((r) => (
+              <figure key={r.name} className="bg-zinc-950 border border-white/10 rounded-xl p-6 flex flex-col">
+                <p className="text-teal-400 tracking-widest mb-3" aria-label="5 out of 5 stars">★★★★★</p>
+                <blockquote className="text-gray-300 leading-relaxed flex-1">&ldquo;{r.quote}&rdquo;</blockquote>
+                <figcaption className="mt-4 text-sm text-gray-500">
+                  <span className="text-white font-semibold">{r.name}</span> · Parent · Google review
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* First class */}
+      <section className="bg-zinc-950 py-20">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-black mb-10">
             Your Kid&apos;s <span className="text-teal-400">First Class</span>
@@ -228,7 +275,7 @@ export default function KidsPage() {
       </section>
 
       {/* Booking */}
-      <section id="book" className="bg-zinc-950 py-20 scroll-mt-16">
+      <section id="book" className="bg-zinc-900 py-20 scroll-mt-16">
         <div className="max-w-4xl mx-auto px-4">
           <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">First week free · No credit card</p>
           <h2 className="text-4xl font-black mb-4">
@@ -240,14 +287,14 @@ export default function KidsPage() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-zinc-900 py-20">
+      <section className="bg-zinc-950 py-20">
         <div className="max-w-3xl mx-auto px-4">
           <h2 className="text-3xl font-black mb-10">
             Parent <span className="text-teal-400">FAQ</span>
           </h2>
           <div className="flex flex-col gap-3">
             {faqs.map((f) => (
-              <details key={f.q} className="group bg-zinc-950 border border-white/10 rounded-xl px-6 py-4 open:border-teal-500/40">
+              <details key={f.q} className="group bg-zinc-900 border border-white/10 rounded-xl px-6 py-4 open:border-teal-500/40">
                 <summary className="cursor-pointer list-none font-semibold flex items-center justify-between gap-4">
                   {f.q}
                   <span className="text-teal-400 text-xl leading-none transition-transform group-open:rotate-45">+</span>
