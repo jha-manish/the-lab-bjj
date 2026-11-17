@@ -18,10 +18,10 @@ const programs = [
 ]
 
 const coaches = [
-  { name: 'Dragan Konjevic', rank: 'Black Belt', cred: 'Founder · Alliance BB promoted by Romero "Jacaré" Cavalcanti', founder: true, photo: '/images/coaches/dragan_konjevice.png' },
+  { name: 'Dragan Konjevic', rank: 'Black Belt', cred: 'Founder · Alliance BB promoted by Romero "Jacaré" Cavalcanti', founder: true, photo: '/images/coaches/dragan_konjevic.jpg' },
   { name: 'Brandon Twaddle', rank: 'Brown Belt', cred: 'Head Coach · IBJJF No-Gi World Silver Medalist', founder: false, photo: '/images/coaches/brandon_t.webp' },
   { name: 'Dave Knowles', rank: 'Black Belt', cred: 'IBJJF World Champion', founder: false, photo: '/images/coaches/dave_knowles.webp' },
-  { name: 'Roger Morais', rank: 'Black Belt', cred: '15+ years experience · Kids Coach', founder: false, photo: '/images/coaches/roger_morais.webp' },
+  { name: 'Roger Morais', rank: 'Black Belt', cred: '15+ years experience · Kids Coach', founder: false, photo: '/images/coaches/roger_morais.jpg' },
   { name: 'Stephen DesChamp', rank: 'Brown Belt', cred: 'IBJJF World Competitor · Morning Classes', founder: false, photo: null },
 ]
 
