@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import type { KeyboardEvent } from 'react'
 import { TRIAL_CLASSES, type TrialClass } from '@/lib/trial-classes'
-import { trackMetaLead } from '@/lib/meta-pixel'
+import { trackTrialBooked } from '@/lib/analytics'
 import { getStoredAttribution } from '@/lib/attribution'
 import WaiverCallout from '@/components/WaiverCallout'
 
@@ -233,7 +233,7 @@ export default function ClassBookingWidget() {
       if (!res.ok || data.error) throw new Error(data.error ?? 'Booking failed')
       setConfirmedBooking({ id: data.booking!.id, startAt: selectedSlot.startAt })
       setStep('confirm')
-      trackMetaLead({
+      trackTrialBooked({
         bookingId: data.booking!.id,
         className: selectedClass.name,
       })

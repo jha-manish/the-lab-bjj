@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { trackContactSubmitted } from '@/lib/analytics'
 
 export default function FloatingContact() {
   const [open, setOpen] = useState(false)
@@ -21,6 +22,7 @@ export default function FloatingContact() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Something went wrong')
       setStatus('success')
+      trackContactSubmitted('floating_widget')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setStatus('error')
