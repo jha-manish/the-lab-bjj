@@ -7,13 +7,15 @@ import FloatingContact from "@/components/FloatingContact";
 import MetaPixel from "@/components/MetaPixel";
 import { META_PIXEL_ID } from "@/lib/meta-pixel";
 import AttributionCapture from "@/components/AttributionCapture";
+import { BASE_URL, DEFAULT_OG_IMAGE } from "@/lib/seo";
 
-const BASE_URL = 'https://labjiujitsu.com'
+const DEFAULT_TITLE = 'The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON'
+const DEFAULT_DESCRIPTION = "Waterloo's dedicated BJJ academy. World-class coaching, all levels welcome. First week free."
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON',
+    default: DEFAULT_TITLE,
     template: '%s | The Jiu-Jitsu Lab Waterloo',
   },
   description: "Waterloo's dedicated Brazilian Jiu-Jitsu academy. Led by IBJJF No-Gi World Silver Medalist Brandon Twaddle and IBJJF World Champion Dave Knowles. Gi, No-Gi, Kids, Women's & Competition programs. First week free.",
@@ -35,6 +37,10 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true },
   },
+  // Pages without their own metadata (e.g. the 404 page) fall back to this —
+  // deliberately NOT the homepage URL, so an unindexed page doesn't read as
+  // a duplicate of "/". Pages that should be indexed set their own
+  // canonical via lib/seo's pageMetadata().
   alternates: {
     canonical: BASE_URL,
   },
@@ -43,22 +49,15 @@ export const metadata: Metadata = {
     locale: 'en_CA',
     url: BASE_URL,
     siteName: 'The Jiu-Jitsu Lab',
-    title: 'The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON',
-    description: "Waterloo's dedicated BJJ academy. World-class coaching, all levels welcome. First week free.",
-    images: [
-      {
-        url: '/images/hero/hero-group.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'The Jiu-Jitsu Lab — BJJ in Waterloo, ON',
-      },
-    ],
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON',
-    description: "Waterloo's dedicated BJJ academy. World-class coaching, all levels welcome. First week free.",
-    images: ['/images/hero/hero-group.jpg'],
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE.url],
   },
   icons: {
     icon: [

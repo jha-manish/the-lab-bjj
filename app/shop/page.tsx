@@ -1,16 +1,15 @@
-import type { Metadata } from 'next'
 import BookingFlow from '@/components/BookingFlow'
 import { fetchCatalogItems } from '@/lib/square'
+import { pageMetadata } from '@/lib/seo'
 
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Shop | The Jiu-Jitsu Lab Waterloo',
+export const metadata = pageMetadata({
+  title: 'Shop',
   description: 'Shop academy merch from The Jiu-Jitsu Lab in Waterloo, ON.',
-  alternates: { canonical: 'https://labjiujitsu.com/shop' },
-  openGraph: { url: 'https://labjiujitsu.com/shop' },
-}
+  path: '/shop',
+})
 
 interface ShopPageProps {
   searchParams?: Promise<{

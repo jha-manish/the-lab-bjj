@@ -1,9 +1,10 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy | The Jiu-Jitsu Lab',
+export const metadata = pageMetadata({
+  title: 'Privacy Policy',
   description: 'Privacy policy for The Jiu-Jitsu Lab — how we collect, use, and protect your personal information.',
-}
+  path: '/privacy',
+})
 
 export default function PrivacyPolicy() {
   return (

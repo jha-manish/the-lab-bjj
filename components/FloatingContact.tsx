@@ -1,13 +1,21 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { trackContactSubmitted } from '@/lib/analytics'
 
 export default function FloatingContact() {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
+
+  // On mobile, this button's fixed bottom-right position sits directly on
+  // top of the booking widget's per-class "Select" button — the exact CTA
+  // that converts a visitor into a trial booking. /book already surfaces
+  // contact info in its own sidebar, so skip the floating duplicate there.
+  if (pathname === '/book') return null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
