@@ -16,7 +16,7 @@ const coaches = [
     role: 'Founder',
     cred: 'Alliance BB promoted by Romero "Jacaré" Cavalcanti',
     bio: 'Dragan brought Brazilian Jiu-Jitsu to the Kitchener-Waterloo region in 1998 — earning the first black belt in the area and building a BJJ community from the ground up. An Alliance black belt promoted by the legendary Romero "Jacaré" Cavalcanti, his lineage and legacy run through every coach and student at The Lab. He still comes in to teach semi-regularly.',
-    photo: '/images/coaches/dragan_konjevice.png',
+    photo: '/images/coaches/dragan_konjevic.jpg',
   },
   {
     name: 'Brandon Twaddle',
@@ -40,7 +40,7 @@ const coaches = [
     role: 'Kids Coach',
     cred: 'Training since 2011 — 15+ years experience',
     bio: 'Roger heads our Kids BJJ program and has spent over 15 years on the mats. His patient, structured approach makes him ideal for developing young athletes. He instills discipline, confidence, and a love for the art in every student.',
-    photo: '/images/coaches/roger_morais.webp',
+    photo: '/images/coaches/roger_morais.jpg',
   },
   {
     name: 'Stephen DesChamp',

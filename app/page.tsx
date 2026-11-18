@@ -12,16 +12,16 @@ export const metadata = pageMetadata({
 
 const programs = [
   { title: 'Gi & No-Gi BJJ', desc: 'For adults of all levels. Traditional and modern grappling taught by world-level competitors. Morning and evening classes available.' },
-  { title: 'Kids BJJ', desc: 'Ages 5–15. Confidence, discipline, and self-defence through fun, structured classes led by Black Belt Roger Morais.' },
+  { title: 'Kids BJJ', desc: 'Ages 5–14. Confidence, discipline, and self-defence through fun, structured classes led by Black Belt Roger Morais.', href: '/kids', cta: 'Kids program & free class →' },
   { title: "Women's BJJ", desc: 'A dedicated women-only program in a supportive, welcoming environment. No experience needed.' },
   { title: 'Competition Training', desc: 'Led by Dave Knowles — IBJJF World Champion. For competitors looking to take their game to the next level.' },
 ]
 
 const coaches = [
-  { name: 'Dragan Konjevic', rank: 'Black Belt', cred: 'Founder · Alliance BB promoted by Romero "Jacaré" Cavalcanti', founder: true, photo: '/images/coaches/dragan_konjevice.png' },
+  { name: 'Dragan Konjevic', rank: 'Black Belt', cred: 'Founder · Alliance BB promoted by Romero "Jacaré" Cavalcanti', founder: true, photo: '/images/coaches/dragan_konjevic.jpg' },
   { name: 'Brandon Twaddle', rank: 'Brown Belt', cred: 'Head Coach · IBJJF No-Gi World Silver Medalist', founder: false, photo: '/images/coaches/brandon_t.webp' },
   { name: 'Dave Knowles', rank: 'Black Belt', cred: 'IBJJF World Champion', founder: false, photo: '/images/coaches/dave_knowles.webp' },
-  { name: 'Roger Morais', rank: 'Black Belt', cred: '15+ years experience · Kids Coach', founder: false, photo: '/images/coaches/roger_morais.webp' },
+  { name: 'Roger Morais', rank: 'Black Belt', cred: '15+ years experience · Kids Coach', founder: false, photo: '/images/coaches/roger_morais.jpg' },
   { name: 'Stephen DesChamp', rank: 'Brown Belt', cred: 'IBJJF World Competitor · Morning Classes', founder: false, photo: null },
 ]
 
@@ -156,6 +156,11 @@ export default function Home() {
               <div key={p.title} className="bg-zinc-900 border border-white/10 rounded-xl p-6 hover:border-teal-500/50 transition-colors">
                 <h3 className="text-xl font-bold mb-3">{p.title}</h3>
                 <p className="text-gray-400 leading-relaxed">{p.desc}</p>
+                {'href' in p && p.href && (
+                  <Link href={p.href} className="inline-block mt-4 text-teal-400 hover:text-teal-300 font-semibold transition-colors">
+                    {p.cta}
+                  </Link>
+                )}
               </div>
             ))}
           </div>

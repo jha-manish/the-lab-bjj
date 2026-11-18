@@ -19,9 +19,9 @@ export const TRIAL_CLASSES = [
   },
   {
     name: 'Kids Class',
-    desc: 'Ages 5–15. Fun, structured classes building confidence, discipline, and self-defence. Led by Black Belt Roger Morais.',
+    desc: 'Ages 5–14. Fun, structured classes building confidence, discipline, and self-defence. Led by Black Belt Roger Morais.',
     time: 'Mon–Thu · 5:00–6:00 PM',
-    level: 'Ages 5–15',
+    level: 'Ages 5–14',
     itemId: 'RDCFCELC275SBLQLGN2YXUXX',
     variationId: 'UXGTIMUXQ5HW5VWWE5LJZAQ7',
     variationVersion: '1790534008254',
