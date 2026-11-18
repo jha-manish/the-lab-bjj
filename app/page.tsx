@@ -12,7 +12,7 @@ export const metadata = pageMetadata({
 
 const programs = [
   { title: 'Gi & No-Gi BJJ', desc: 'For adults of all levels. Traditional and modern grappling taught by world-level competitors. Morning and evening classes available.' },
-  { title: 'Kids BJJ', desc: 'Ages 5–15. Confidence, discipline, and self-defence through fun, structured classes led by Black Belt Roger Morais.', href: '/kids', cta: 'Kids program & free class →' },
+  { title: 'Kids BJJ', desc: 'Ages 5–14. Confidence, discipline, and self-defence through fun, structured classes led by Black Belt Roger Morais.', href: '/kids', cta: 'Kids program & free class →' },
   { title: "Women's BJJ", desc: 'A dedicated women-only program in a supportive, welcoming environment. No experience needed.' },
   { title: 'Competition Training', desc: 'Led by Dave Knowles — IBJJF World Champion. For competitors looking to take their game to the next level.' },
 ]

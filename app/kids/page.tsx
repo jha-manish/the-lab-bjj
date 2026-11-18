@@ -7,11 +7,11 @@ import { BASE_URL, pageMetadata } from '@/lib/seo'
 export const metadata = pageMetadata({
   title: 'Kids Jiu-Jitsu Classes',
   description:
-    'Kids Brazilian Jiu-Jitsu in Waterloo, ON for ages 5–15. Classes Monday to Thursday, 5–6 PM, led by Black Belt Roger Morais. Builds confidence, focus and real self-defence. First week free.',
+    'Kids Brazilian Jiu-Jitsu in Waterloo, ON for ages 5–14. Classes Monday to Thursday, 5–6 PM, led by Black Belt Roger Morais. Builds confidence, focus and real self-defence. First week free.',
   path: '/kids',
 })
 
-const KIDS_CLASS = TRIAL_CLASSES.filter((cls) => cls.level === 'Ages 5–15')
+const KIDS_CLASS = TRIAL_CLASSES.filter((cls) => cls.level === 'Ages 5–14')
 
 const benefits = [
   {
@@ -52,7 +52,7 @@ const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday']
 const faqs = [
   {
     q: 'What ages is the kids program for?',
-    a: 'Our kids classes are for ages 5 to 15.',
+    a: 'Our kids classes are for ages 5 to 14.',
   },
   {
     q: 'Do younger and older kids train together?',
@@ -99,7 +99,7 @@ const courseJsonLd = {
   '@type': 'Service',
   name: 'Kids Brazilian Jiu-Jitsu',
   serviceType: 'Kids martial arts classes',
-  audience: { '@type': 'PeopleAudience', suggestedMinAge: 5, suggestedMaxAge: 15 },
+  audience: { '@type': 'PeopleAudience', suggestedMinAge: 5, suggestedMaxAge: 14 },
   areaServed: ['Waterloo, ON', 'Kitchener, ON'],
   url: `${BASE_URL}/kids`,
   provider: {
@@ -133,7 +133,7 @@ export default function KidsPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/90 to-zinc-950/60" />
         <div className="relative max-w-6xl mx-auto px-4">
           <div className="max-w-2xl">
-            <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">Ages 5–15 · Waterloo, ON</p>
+            <p className="text-teal-400 font-semibold tracking-widest text-sm uppercase mb-4">Ages 5–14 · Waterloo, ON</p>
             <h1 className="text-5xl md:text-6xl font-black leading-tight mb-6">
               Kids <span className="text-teal-400">Jiu-Jitsu</span>
             </h1>

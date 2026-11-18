@@ -7,7 +7,7 @@ export const metadata = pageMetadata({
   path: '/schedule',
 })
 
-const kids = { time: '5:00 PM', name: 'Kids Class', level: 'Ages 5–15' }
+const kids = { time: '5:00 PM', name: 'Kids Class', level: 'Ages 5–14' }
 const adultGi = { time: '6:00 PM', name: 'Adult Gi', level: 'All Levels' }
 const adultNoGi = { time: '6:00 PM', name: 'Adult No-Gi', level: 'All Levels' }
 const morningNoGi = { time: '6:30 AM', name: 'Adult No-Gi', level: 'All Levels' }
@@ -31,7 +31,7 @@ const schedule = [
 
 const levelColors: Record<string, string> = {
   'All Levels': 'bg-blue-500/20 text-blue-400',
-  'Ages 5–15': 'bg-purple-500/20 text-purple-400',
+  'Ages 5–14': 'bg-purple-500/20 text-purple-400',
   'Women Only': 'bg-pink-500/20 text-pink-400',
   'Free — All Welcome': 'bg-teal-500/20 text-teal-400',
 }
