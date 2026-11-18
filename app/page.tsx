@@ -43,56 +43,65 @@ export default function Home() {
         <div className="relative max-w-6xl mx-auto px-4 py-20 w-full">
           <div className="max-w-2xl">
             <div className="flex items-center gap-3 mb-5">
-              <span className="text-teal-400 font-semibold tracking-widest text-sm uppercase">Waterloo, Ontario</span>
+              <span className="text-teal-400 font-semibold tracking-widest text-sm uppercase">The Jiu-Jitsu Lab · Waterloo</span>
               <span className="text-white/20">·</span>
               <span className="text-white/60 font-semibold text-sm uppercase tracking-widest">Est. 1998</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
-              WELCOME TO<br />
-              <span className="text-teal-400">THE JIU-JITSU LAB</span>
+            <h1 className="text-5xl md:text-7xl font-black leading-[1.05] mb-6">
+              Start <span className="text-teal-400">Jiu-Jitsu</span> in Waterloo.
             </h1>
-            <p className="text-xl md:text-2xl text-gray-200 italic mb-5">Train smart. Roll hard.</p>
-            <p className="text-white font-bold max-w-2xl mb-4 leading-relaxed">
-              A dedicated Brazilian Jiu-Jitsu academy with roots stretching back to 1998 — led by{' '}
-              <span>Head Coach Brandon Twaddle, IBJJF No-Gi World Silver Medalist</span>,{' '}
-              and a staff of world-level competitors including IBJJF World Champion Dave Knowles.
+            <p className="text-xl md:text-2xl text-gray-100 mb-6 leading-relaxed">
+              No experience or fitness needed. Classes for adults, kids 5–14 and women, taught by world-level coaches.
             </p>
-            <p className="text-white font-bold max-w-2xl mb-8 leading-relaxed">
-              Gi, No-Gi, Kids, Women&apos;s, Competition, and Private training in Waterloo. Whether you&apos;re brand new or chasing gold,
-              there&apos;s a place for you on the mat.
-            </p>
-            <p className="text-sm text-white font-bold mb-8">
-              📍{' '}
-              <a
-                href="https://maps.app.goo.gl/aJwg6Sc1smkmKRTz7"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-teal-300 transition-colors"
-              >
-                420 Weber St N, Waterloo, ON
-              </a>
-              {' '}|{' '}
-              <a href="mailto:support@labjiujitsu.com" className="hover:text-teal-300 transition-colors">
-                ✉️ support@labjiujitsu.com
-              </a>
-              {' '}|{' '}
-              <a href="sms:+12269893140" className="hover:text-teal-300 transition-colors">
-                💬 (226) 989-3140
-              </a>
-              {' '}|{' '}
-              <a href="https://ig.me/m/thelabwaterloo" target="_blank" rel="noreferrer" className="hover:text-teal-300 transition-colors">
-                📸 Instagram
-              </a>
-            </p>
+
+            <div className="flex flex-wrap gap-2 mb-8">
+              {[
+                { href: '/book', label: 'Never trained? Start here' },
+                { href: '/kids', label: 'Kids 5–14' },
+                { href: '/book', label: "Women's class" },
+                { href: '/schedule', label: 'Morning & evening classes' },
+              ].map((chip) => (
+                <Link
+                  key={chip.label}
+                  href={chip.href}
+                  className="text-sm font-semibold text-white bg-white/10 hover:bg-teal-500 hover:text-black border border-white/15 px-3 py-1.5 rounded-full transition-colors"
+                >
+                  {chip.label} →
+                </Link>
+              ))}
+            </div>
+
             <div className="flex flex-wrap gap-4">
               <Link href="/book" className="bg-teal-500 hover:bg-teal-400 text-black font-black px-8 py-4 rounded text-lg transition-colors">
-                BOOK YOUR FREE TRIAL
+                BOOK YOUR FREE WEEK
               </Link>
               <Link href="/memberships" className="border border-white/30 bg-black/20 hover:bg-white/10 hover:border-white text-white font-semibold px-8 py-4 rounded text-lg transition-colors">
-                View Programs
+                See Pricing
               </Link>
             </div>
-            <GoogleRatingLink className="mt-6 text-sm text-white/90" />
+            <p className="text-sm text-gray-300 mt-3">First week free · No credit card · No contract</p>
+
+            <div className="mt-8 flex flex-col gap-2 text-sm text-white/90">
+              <GoogleRatingLink />
+              <p>
+                Coached by IBJJF World Champion Dave Knowles and IBJJF No-Gi World Silver Medalist Brandon Twaddle.
+              </p>
+              <p>
+                📍{' '}
+                <a
+                  href="https://maps.app.goo.gl/aJwg6Sc1smkmKRTz7"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-teal-300 transition-colors underline-offset-2 hover:underline"
+                >
+                  420 Weber St N, Waterloo
+                </a>
+                {' '}· Free parking ·{' '}
+                <a href="sms:+12269893140" className="hover:text-teal-300 transition-colors underline-offset-2 hover:underline">
+                  Text (226) 989-3140
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </section>
