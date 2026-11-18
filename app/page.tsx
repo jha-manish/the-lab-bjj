@@ -2,6 +2,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import InstagramFeed from '@/components/InstagramFeed'
 import { pageMetadata } from '@/lib/seo'
+import ReviewCards, { GoogleRatingLink } from '@/components/ReviewCards'
+import { homepageReviews } from '@/lib/reviews'
 
 export const metadata = pageMetadata({
   title: 'The Jiu-Jitsu Lab | Brazilian Jiu-Jitsu in Waterloo, ON',
@@ -90,6 +92,7 @@ export default function Home() {
                 View Programs
               </Link>
             </div>
+            <GoogleRatingLink className="mt-6 text-sm text-white/90" />
           </div>
         </div>
       </section>
@@ -197,6 +200,20 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Reviews */}
+      <section className="bg-zinc-950 py-20">
+        <div className="max-w-6xl mx-auto px-4">
+          <p className="text-teal-400 font-semibold tracking-widest text-xs uppercase mb-3">From Our Members</p>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <h2 className="text-4xl font-black">
+              What People <span className="text-teal-400">Say</span>
+            </h2>
+            <GoogleRatingLink className="text-gray-300" />
+          </div>
+          <ReviewCards reviews={homepageReviews} cardClassName="bg-zinc-900" />
         </div>
       </section>
 

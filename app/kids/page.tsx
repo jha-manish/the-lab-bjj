@@ -3,6 +3,8 @@ import Image from 'next/image'
 import ClassBookingWidget from '@/components/ClassBookingWidget'
 import { TRIAL_CLASSES } from '@/lib/trial-classes'
 import { BASE_URL, pageMetadata } from '@/lib/seo'
+import ReviewCards from '@/components/ReviewCards'
+import { GOOGLE_RATING, GOOGLE_REVIEWS_URL, parentReviews } from '@/lib/reviews'
 
 export const metadata = pageMetadata({
   title: 'Kids Jiu-Jitsu Classes',
@@ -31,21 +33,6 @@ const benefits = [
     desc: 'Rolling, games and partner drills build strength, balance and coordination without it ever feeling like a workout.',
   },
 ]
-
-const parentReviews = [
-  {
-    quote:
-      'My kid is enrolled in the kids lessons for more than a year. She really enjoys the class. The gym is always clean, welcoming, and family-friendly. The coaches create such a positive and fun environment for the kids while still teaching discipline, confidence, and strong technique.',
-    name: 'Angelica S.',
-  },
-  {
-    quote:
-      "Great kids class, my eight year old daughter loves it. There's a good mix of kids from small weak and clueless all the way up to little warriors that are trying to conquer the world. Everyone has a great time.",
-    name: 'Joe I.',
-  },
-]
-
-const GOOGLE_REVIEWS_URL = 'https://www.google.com/maps/place/?q=place_id:ChIJC8GkouL0K4gRqv2ztNsE7pM'
 
 const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday']
 
@@ -232,22 +219,12 @@ export default function KidsPage() {
             What Parents <span className="text-teal-400">Say</span>
           </h2>
           <p className="text-gray-400 mb-10">
-            Rated 4.9 on Google.{' '}
+            Rated {GOOGLE_RATING} on Google.{' '}
             <a href={GOOGLE_REVIEWS_URL} target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:text-teal-300 font-semibold">
               Read all reviews →
             </a>
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {parentReviews.map((r) => (
-              <figure key={r.name} className="bg-zinc-950 border border-white/10 rounded-xl p-6 flex flex-col">
-                <p className="text-teal-400 tracking-widest mb-3" aria-label="5 out of 5 stars">★★★★★</p>
-                <blockquote className="text-gray-300 leading-relaxed flex-1">&ldquo;{r.quote}&rdquo;</blockquote>
-                <figcaption className="mt-4 text-sm text-gray-500">
-                  <span className="text-white font-semibold">{r.name}</span> · Parent · Google review
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+          <ReviewCards reviews={parentReviews} />
         </div>
       </section>
 
